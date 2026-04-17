@@ -25,7 +25,6 @@ class TaskController extends Controller
         $query->where('status', $request->status);
     }
 
-    // Giữ nguyên lọc theo user_id nếu có
     if ($request->filled('user_id')) {
         $query->where('user_id', $request->user_id);
     }
@@ -58,8 +57,6 @@ class TaskController extends Controller
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         } else {
-            // Nếu không có user_id (đang ở trang danh sách tổng), 
-            // thì mới xóa sạch toàn bộ (hoặc Trung có thể bỏ lệnh này nếu muốn an toàn)
             $query->delete(); 
         }
 
@@ -68,16 +65,19 @@ class TaskController extends Controller
         return back()->with('success', 'Đã xóa danh sách công việc tương ứng.');
     }
 
-    // Trung nên thêm hàm update để xử lý việc Admin đổi trạng thái hoặc gán User
     public function update(Request $request, Task $task)
     {
-        // Validate dữ liệu từ Modal gửi lên
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|string',
-            'deadline' => 'nullable|date',
+            'deadline' => 'nullable|date|after_or_equal:today',
             'priority' => 'nullable|string',
-            'user_id' => 'nullable|exists:users,id' // Đề phòng trường hợp muốn đổi người thực hiện trong Modal
+            'user_id' => 'nullable|exists:users,id',
+            'description' => 'nullable|string',
+        ], [
+            'deadline.after_or_equal' => 'Hạn chót không được nhỏ hơn ngày hiện tại',
+            'deadline.date' => 'Định dạng ngày tháng không hợp lệ',
+            'title.required' => 'Tên công việc không được để trống',
         ]);
 
         $task->update($validated);
@@ -92,27 +92,31 @@ class TaskController extends Controller
     }
 
     public function store(Request $request)
-{
-    // 1. Validate dữ liệu
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'user_id' => 'required|exists:users,id',
-        'deadline' => 'required|date',
-        'priority' => 'required|string',
-        'status' => 'required|string',
-    ]);
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'user_id' => 'required|exists:users,id',
+            'deadline' => 'required|date|after_or_equal:today', 
+            'priority' => 'required|string',
+            'status' => 'required|string',
+            'description' => 'nullable|string',
+        ], [
+            'title.required' => 'Bạn chưa nhập tên công việc',
+            'deadline.required' => 'Bạn chưa chọn hạn chót',
+            'deadline.date' => 'Định dạng ngày tháng không hợp lệ',
+            'deadline.after_or_equal' => 'Hạn chót không được nhỏ hơn ngày hiện tại',
+        ]);
 
-    // 2. Tạo công việc mới
-    // Thêm created_by_admin = true để đánh dấu đây là việc do Admin giao
-    Task::create([
-        'title' => $validated['title'],
-        'user_id' => $validated['user_id'],
-        'deadline' => $validated['deadline'],
-        'priority' => $validated['priority'],
-        'status' => $validated['status'],
-        'created_by_admin' => true, 
-    ]);
+        Task::create([
+            'title' => $validated['title'],
+            'user_id' => $validated['user_id'],
+            'deadline' => $validated['deadline'],
+            'priority' => $validated['priority'],
+            'status' => $validated['status'],
+            'description' => $validated['description'],
+            'created_by_admin' => true, 
+        ]);
 
-    return back()->with('success', 'Đã giao công việc mới thành công!');
-}
+        return back()->with('success', 'Đã giao công việc mới thành công!');
+    }
 }

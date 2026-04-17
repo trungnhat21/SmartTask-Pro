@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Phải dùng POST vì chúng ta gửi một mảng ID lên
     Route::post('/tasks/delete-multiple', [TaskController::class, 'deleteMultiple'])->name('task.delete-multiple');
 
+    Route::patch('/quan-ly-cong-viec/{task}/update-status', [TaskController::class, 'updateStatus'])->name('task.update-status');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

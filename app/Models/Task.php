@@ -9,17 +9,18 @@ class Task extends Model
 {
     use HasFactory;
 
-    // Các trường dữ liệu Trung cho phép lưu vào database từ Form
     protected $fillable = [
         'user_id',
-        'title',      // Tên công việc
-        'priority',   // Độ ưu tiên
-        'deadline',   // Hạn chót
-        'description', // Ghi chú thêm
+        'title',
+        'priority', 
+        'deadline',
+        'description',
         'status',
         'created_by_admin',
     ];
-
+    protected $casts = [
+    'created_by_admin' => 'boolean',
+    ];
     /**
      * Thiết lập mối quan hệ ngược lại với User.
      * Một công việc thuộc về một người dùng (Trung Nhật).

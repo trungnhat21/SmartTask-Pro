@@ -7,36 +7,49 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
     const [priority, setPriority] = useState(filters?.priority || '');
     const [selectedIds, setSelectedIds] = useState([]);
 
-    // Hàm xử lý gửi yêu cầu tìm kiếm
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
+
+    const openModal = (task) => {
+        setSelectedTask(task);
+        setIsModalOpen(true);
+    };
+
     const handleFilter = () => {
         router.get(route('Quanlycongviec'), 
             { search, priority }, 
             { preserveState: true, replace: true }
         );
     };
-    //Xóa từng công việc
+
     const deleteTask = (id) => {
         if (confirm('Bạn có chắc chắn muốn xóa công việc này không?')) {
             router.delete(route('task.destroy', id));
         }
     };
-    //Xóa công việc đã được chọn
+
+    const updateStatus = (id, newStatus) => {
+        router.patch(route('task.update-status', id), {
+            status: newStatus
+        }, { preserveScroll: true });
+    };
+
     const handleCheckboxChange = (id) => {
         setSelectedIds((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
     };
 
-    // 3. Hàm xóa các mục đã chọn
     const deleteSelected = () => {
         if (confirm(`Trung có chắc muốn xóa ${selectedIds.length} công việc đã chọn?`)) {
             router.post(route('task.delete-multiple'), {
                 ids: selectedIds
             }, {
-                onSuccess: () => setSelectedIds([]), // Xóa xong thì làm trống giỏ hàng
+                onSuccess: () => setSelectedIds([]),
             });
         }
     };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -50,7 +63,6 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                         
                         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 px-2"> 
                             <div className="flex flex-1 flex-col md:flex-row gap-4">
-                                {/* Tìm kiếm theo tên */}
                                 <div className="relative w-full md:w-80">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <i className="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
@@ -65,7 +77,6 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                     />
                                 </div>
 
-                                {/* Lọc theo độ ưu tiên */}
                                 <select 
                                     value={priority}
                                     onChange={(e) => {
@@ -108,20 +119,28 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                             </div>
                         </div>
 
-                        {/* Danh sách hiển thị dữ liệu từ Database */}
                         <div className="space-y-3">
                             {tasks && tasks.length > 0 ? (
                                 tasks.map((task) => (
                                     <div key={task.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition">
                                         <div className="flex items-center gap-4">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={selectedIds.includes(task.id)}
-                                                onChange={() => handleCheckboxChange(task.id)}
-                                                className="rounded text-indigo-600 focus:ring-indigo-500" 
-                                            />
+                                            {!task.created_by_admin ? (
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={selectedIds.includes(task.id)}
+                                                    onChange={() => handleCheckboxChange(task.id)}
+                                                    className="rounded text-indigo-600 focus:ring-indigo-500" 
+                                                />
+                                            ) : (
+                                                <div className="w-4 flex justify-center text-gray-400">
+                                                    <i className="fa-solid fa-thumbtack text-[10px]" title="Được giao"></i>
+                                                </div>
+                                            )}
                                             <div>
-                                                <p className="font-bold text-gray-800">{task.title}</p>
+                                                <p className="font-bold text-gray-800">
+                                                    {task.title}
+                                                    {task.created_by_admin && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">ADMIN GIAO</span>}
+                                                </p>
                                                 <p className="text-sm text-gray-500">Hạn chót: {task.deadline}</p>
                                             </div>
                                         </div>
@@ -134,20 +153,52 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                             }`}>
                                                 {task.priority}
                                             </span>
-                                            <span className="text-sm text-gray-600 font-semibold">{task.status || 'Chờ'}</span>
-                                            <div className="flex gap-4">
-                                                <Link 
-                                                    href={route('task.edit', task.id)} 
-                                                    className="text-blue-600 hover:underline text-sm"
-                                                >
-                                                    <i class="fa fa-pencil" aria-hidden="true"></i>
-                                                </Link>
+                                            {task.status === 'Quá hạn' ? (
+                                                <span className="text-red-600 font-bold text-sm px-2">
+                                                    Quá hạn
+                                                </span>
+                                            ) : (
+                                                <select 
+                                                    value={task.status || 'Chưa làm'} 
+                                                    onChange={(e) => updateStatus(task.id, e.target.value)}
+                                                    
+                                                    className="text-sm border-gray-300 rounded-md py-1 focus:ring-indigo-500 bg-white"
+                                                    >
+                                                        <option value="Chưa làm">Chưa làm</option>
+                                                        <option value="Đang làm">Đang làm</option>
+                                                        <option value="Hoàn thành">Hoàn thành</option>
+                                                </select>
+                                            )}
+                                            <div className="flex gap-4 items-center">
                                                 <button 
-                                                    onClick={() => deleteTask(task.id)}
-                                                    className="text-red-600 hover:underline text-sm font-medium"
+                                                    onClick={() => openModal(task)}
+                                                    className="text-gray-500 hover:text-indigo-600 transition"
+                                                    title="Xem chi tiết"
                                                 >
-                                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                                    <i className="fa-solid fa-eye"></i>
                                                 </button>
+
+                                                {!task.created_by_admin && (
+                                                    <Link 
+                                                        href={route('task.edit', task.id)} 
+                                                        className="text-blue-600 hover:underline text-sm"
+                                                    >
+                                                        <i className="fa fa-pencil" aria-hidden="true"></i>
+                                                    </Link>
+                                                )}
+
+                                                {!task.created_by_admin && (
+                                                    <button 
+                                                        onClick={() => deleteTask(task.id)}
+                                                        className="text-red-600 hover:underline text-sm font-medium"
+                                                    >
+                                                        <i className="fa fa-trash" aria-hidden="true"></i>
+                                                    </button>
+                                                )}
+
+                                                {task.created_by_admin && (
+                                                    <i className="fa-solid fa-lock text-gray-300 text-sm" title="Không thể sửa/xóa"></i>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -158,10 +209,41 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                 </div>
                             )}
                         </div>
-
                     </div>
                 </div>
             </div>
+
+            {/* MODAL CHI TIẾT CÔNG VIỆC */}
+            {isModalOpen && selectedTask && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+                        <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                            <h3 className="text-xl font-bold text-gray-800">Thông tin chi tiết</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-xs font-semibold text-gray-400 uppercase">Tên công việc</label>
+                                <p className="text-lg font-medium text-gray-900">{selectedTask.title}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-semibold text-gray-400 uppercase">Mô tả chi tiết</label>
+                                <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-100 min-h-[120px] text-gray-600 text-sm whitespace-pre-line">
+                                    {selectedTask.description || "Không có mô tả chi tiết cho công việc này."}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-gray-50 text-right">
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

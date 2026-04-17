@@ -30,18 +30,20 @@ export default function Cvthongminh({ auth, smartTasks }) {
 
                     {/* Danh sách công việc */}
                     <div className="space-y-6">
-                        {smartTasks && smartTasks.length > 0 ? (
-                            smartTasks.map((task, index) => (
-                                <div 
-                                    key={task.id} 
-                                    className={`relative p-6 rounded-2xl border transition-all duration-500 ${
-                                        index === 0 
-                                        ? 'bg-white border-blue-400 shadow-xl shadow-blue-100 scale-[1.03] z-10' 
-                                        : task.priority === 'Cao'
-                                        ? 'bg-white border-blue-200 shadow-md opacity-100'
-                                        : 'bg-white border-gray-200 shadow-sm opacity-90'
-                                    }`}
-                                >
+                        {smartTasks && smartTasks.filter(t => t.status !== 'Quá hạn' && t.status !== 'Hoàn thành').length > 0 ? (
+                            smartTasks
+                                .filter(task => task.status !== 'Quá hạn' && task.status !== 'Hoàn thành')
+                                .map((task, index) => (
+                                    <div 
+                                        key={task.id} 
+                                        className={`relative p-6 rounded-2xl border transition-all duration-500 ${
+                                            index === 0 
+                                            ? 'bg-white border-blue-400 shadow-xl shadow-blue-100 scale-[1.03] z-10' 
+                                            : task.priority === 'Cao'
+                                            ? 'bg-white border-blue-200 shadow-md opacity-100'
+                                            : 'bg-white border-gray-200 shadow-sm opacity-90'
+                                        }`}
+                                    >
                                     {/* Nhãn trạng thái */}
                                     <div className="absolute -top-3 left-6 flex gap-2">
                                         {task.priority === 'Cao' && (
@@ -80,7 +82,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
                                         </div>
                                     </div>
 
-                                    {/* Khối lời khuyên từ Hệ thống */}
+
                                     <div className={`flex items-start gap-4 p-4 rounded-xl border-l-4 ${
                                         task.priority === 'Cao' 
                                         ? 'bg-blue-50/50 border-l-blue-600 border-y-blue-100 border-r-blue-100' 
@@ -96,7 +98,6 @@ export default function Cvthongminh({ auth, smartTasks }) {
                                                 Phân tích hệ thống:
                                             </p>
                                             <div className={`${task.priority === 'Cao' ? 'text-blue-900 font-semibold' : 'text-gray-700'}`}>
-                                                {/* ĐÃ SỬA: Thay ai_suggestion bằng dynamic_advice */}
                                                 {task.dynamic_advice}
                                             </div>
                                         </div>

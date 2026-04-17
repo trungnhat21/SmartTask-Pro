@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 use App\Http\Controllers\CvController;
 use Illuminate\Http\Request;
@@ -9,35 +8,33 @@ use Inertia\Inertia;
 class TaskController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Task::where('user_id', auth()->id());
+    {
+        $query = Task::where('user_id', auth()->id());
 
-    // Tìm kiếm theo tên (title) nếu có nhập
-    if ($request->filled('search')) {
-        $query->where('title', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        return Inertia::render('Quanlycongviec', [
+            'tasks' => $query->latest()->get(),
+            'filters' => $request->only(['search', 'priority'])
+        ]);
     }
 
-    // Lọc theo độ ưu tiên nếu có chọn
-    if ($request->filled('priority')) {
-        $query->where('priority', $request->priority);
-    }
-
-    return Inertia::render('Quanlycongviec', [
-        'tasks' => $query->latest()->get(),
-        'filters' => $request->only(['search', 'priority'])
-    ]);
-}
-    //Thêm
     public function create()
     {
         return Inertia::render('Task/Create');
     }
 
-    //Chỉnh sửa
+    // Chỉnh sửa: Chặn nếu là task của Admin
     public function edit(Task $task)
     {
-        if ($task->user_id !== auth()->id()) {
-            abort(403);
+        if ($task->user_id !== auth()->id() || $task->created_by_admin) {
+            abort(403, 'Bạn không có quyền chỉnh sửa công việc của Admin.');
         }
 
         return Inertia::render('Task/Edit', [
@@ -45,18 +42,22 @@ class TaskController extends Controller
         ]);
     }
 
-    // Lưu dữ liệu sau khi sửa
+    // Cập nhật: Chặn nếu là task của Admin
     public function update(Request $request, Task $task)
     {
-        if ($task->user_id !== auth()->id()) {
-            abort(403);
+        if ($task->user_id !== auth()->id() || $task->created_by_admin) {
+            abort(403, 'Bạn không có quyền cập nhật công việc của Admin.');
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|string',
-            'deadline' => 'required|date|after:today',
+            'deadline' => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string',
+        ], [
+            'deadline.after_or_equal' => 'Hạn chót không được nhỏ hơn ngày hiện tại',
+            'deadline.date' => 'Định dạng ngày tháng không hợp lệ',
+            'title.required' => 'Tên công việc không được để trống',
         ]);
 
         $task->update($validated);
@@ -64,37 +65,49 @@ class TaskController extends Controller
         return redirect()->route('Quanlycongviec');
     }
 
-    //Xóa từng mục
     public function destroy(Task $task)
     {
-        if ($task->user_id !== auth()->id()) {
-            abort(403);
+        if ($task->user_id !== auth()->id() || $task->created_by_admin) {
+            return redirect()->back()->with('error', 'Không thể xóa công việc do Admin giao.');
         }
 
         $task->delete();
 
-        // Quay lại trang danh sách kèm thông báo (nếu cần)
         return redirect()->route('Quanlycongviec');
     }
 
-    //Xóa được chọn
     public function deleteMultiple(Request $request)
     {
-        // Lấy mảng IDs từ request gửi lên
         $ids = $request->input('ids');
 
         if ($ids && is_array($ids)) {
             Task::whereIn('id', $ids)
                 ->where('user_id', auth()->id())
+                ->where('created_by_admin', false)
                 ->delete();
         }
 
         return redirect()->back();
     }
-    // Hàm xử lý lưu dữ liệu
+
+    public function updateStatus(Request $request, Task $task)
+    {
+        if ($task->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($task->status === 'Quá hạn') {
+            return back()->with('error', 'Công việc đã quá hạn, không thể thay đổi trạng thái!');
+        }
+        $task->update([
+            'status' => $request->status
+        ]);
+
+        return redirect()->back()->with('success', 'Đã cập nhật tiến độ!');
+    }
+    
     public function store(Request $request)
     {
-        // 1. Validate dữ liệu
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|string',
@@ -106,11 +119,10 @@ class TaskController extends Controller
             'deadline.after' => 'Hạn chót không được nhỏ hơn hoặc bằng ngày hiện tại.',
         ]);
 
-        // 2. Gán trạng thái mặc định (Bỏ phần AI_suggestion vì đã xóa cột DB)
         $validated['status'] = 'Mới'; 
         $validated['user_id'] = auth()->id();
+        $validated['created_by_admin'] = false; 
 
-        // 3. Lưu vào Database
         Task::create($validated);
 
         return redirect()->route('Quanlycongviec');

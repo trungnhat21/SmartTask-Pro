@@ -14,59 +14,50 @@ class CvController extends Controller
         // 1. Lấy danh sách công việc chưa hoàn thành của người dùng hiện tại
         $tasks = Task::where('user_id', Auth::id())
                     ->where('status', '!=', 'Hoàn thành')
+                    ->where('status', '!=', 'Quá hạn')
                     ->get();
 
         // 2. Thuật toán sắp xếp và xử lý dữ liệu thông minh
         $smartTasks = $tasks->map(function ($task) {
-            $score = 0;
-            $now = now();
-            $deadline = $task->deadline ? Carbon::parse($task->deadline) : null;
+        $score = 0;
+        $now = now();
+        $deadline = $task->deadline ? Carbon::parse($task->deadline) : null;
 
-            // QUY TẮC 1: Tính điểm theo mức độ ưu tiên
-            if ($task->priority === 'Cao') {
-                $score += 100;
-            } elseif ($task->priority === 'Trung bình') {
-                $score += 50;
-            } else {
-                $score += 10;
-            }
+            // Điểm ưu tiên
+        if ($task->priority === 'Cao') {
+            $score += 100;
+        } elseif ($task->priority === 'Trung bình') {
+            $score += 50;
+        } else {
+            $score += 10;
+        }
 
-            // QUY TẮC 2: Tính điểm theo Deadline và gán nhãn cảnh báo
-            $task->warning = null; 
+            // Điểm Deadline
+        $task->warning = null; 
             if ($deadline) {
-                if ($deadline->isPast()) {
-                    $score += 200; // Ưu tiên cao nhất cho việc quá hạn
-                    $task->warning = "Đã quá hạn!"; 
-                } else {
-                    $daysLeft = $now->diffInDays($deadline, false);
-                    if ($daysLeft <= 1) {
-                        $score += 150; // Sắp đến hạn (trong 24h)
-                    } elseif ($daysLeft <= 3) {
-                        $score += 80;
-                    }
+                $daysLeft = $now->diffInDays($deadline, false);
+                if ($daysLeft <= 0) {
+                    $score += 200; 
+                    $task->warning = "Sắp trễ hạn!"; 
+                } elseif ($daysLeft <= 1) {
+                    $score += 150; 
+                } elseif ($daysLeft <= 3) {
+                    $score += 80;
                 }
             }
 
-            $task->smart_score = $score;
+        $task->smart_score = $score;
+        $task->dynamic_advice = self::generateAdvice($task->priority, $task->deadline);
 
-            // QUAN TRỌNG: Tạo lời khuyên động với danh xưng "Bạn"
-            // Biến này không lưu vào DB, tránh lỗi "models/gemini-pro is not found"
-            $task->dynamic_advice = self::generateAdvice($task->priority, $task->deadline);
-
-            return $task;
+        return $task;
         })
-        ->sortByDesc('smart_score') // Đưa việc quan trọng/gần hạn lên đầu
+        ->sortByDesc('smart_score')
         ->values(); 
 
         return Inertia::render('Cvthongminh', [
             'smartTasks' => $smartTasks
         ]);
     }
-
-    /**
-     * Hàm tạo lời khuyên dựa trên quy tắc (Rule-based)
-     * Sử dụng danh xưng "Bạn" theo yêu cầu
-     */
     public static function generateAdvice($priority, $deadline)
     {
         $now = now();
