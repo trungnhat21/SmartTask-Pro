@@ -64,17 +64,17 @@ class CvController extends Controller
         $dl = $deadline ? Carbon::parse($deadline) : null;
 
         if ($dl && $dl->isPast()) {
-            return "⚠️ Việc này đã quá hạn! Bạn cần ưu tiên xử lý ngay để không bị dồn việc.";
+            return "⚠️ Việc này đã quá hạn! Bạn cần ưu tiên xử lý ngay để không bị dồn việc";
         }
         
         if ($dl && $now->diffInDays($dl, false) <= 1) {
-            return "🔥 Hạn chót rất gần rồi! Bạn hãy tập trung dứt điểm việc này trong hôm nay nhé.";
+            return "🔥 Hạn chót rất gần rồi! Bạn hãy tập trung dứt điểm việc này trong hôm nay nhé";
         }
 
         if ($priority === 'Cao') {
-            return "⭐ Đây là nhiệm vụ trọng tâm. Bạn nên dành thời gian tập trung nhất để hoàn thành.";
+            return "⭐ Đây là nhiệm vụ trọng tâm. Bạn nên dành thời gian tập trung nhất để hoàn thành";
         }
 
-        return "✅ Công việc đã được tối ưu. Bạn hãy thực hiện theo lộ trình đã sắp xếp nhé.";
+        return "✅ Công việc đã được tối ưu. Bạn hãy thực hiện theo lộ trình đã sắp xếp nhé";
     }
 }

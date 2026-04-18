@@ -4,7 +4,7 @@ export default function ApplicationLogo(props) {
             {...props} 
             src="/Duantt/public/images/logo.png"
             alt="Logo dự án" 
-            className="h-20 w-auto mix-blend-multiply"
+            className="h-16 w-auto mix-blend-multiply"
             style={{ maxHeight: '100%' }}
         />
     );

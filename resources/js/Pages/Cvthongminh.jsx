@@ -23,7 +23,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
                         <div className="relative z-10">
                             <h3 className="text-lg font-bold text-gray-900">Hệ thống Phân tích Công việc</h3>
                             <p className="mt-1 text-gray-600">
-                                Chào <strong>{auth.user.name}</strong>, hệ thống đã lọc và đưa các <strong>nhiệm vụ trọng tâm</strong> lên đầu dựa trên độ ưu tiên và thời gian.
+                                Chào <strong>{auth.user.name}</strong>, hệ thống đã lọc và đưa các <strong>nhiệm vụ trọng tâm</strong> lên đầu dựa trên độ ưu tiên và thời gian
                             </p>
                         </div>
                     </div>
