@@ -6,7 +6,7 @@ export default function Dashboard({ auth }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Bảng Điều Khiển Hệ Thống AI
+                    Bảng Điều Khiển Hệ Thống
                 </h2>
             }
         >
@@ -31,7 +31,6 @@ export default function Dashboard({ auth }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
-                        {/* KHU VỰC 2: DANH SÁCH CÔNG VIỆC NHANH (Chiếm 2/3) */}
                         <div className="md:col-span-2 overflow-hidden bg-white shadow-sm sm:rounded-lg">
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-4">

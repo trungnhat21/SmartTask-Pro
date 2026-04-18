@@ -15,12 +15,19 @@ class TaskController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
+        $tasks = $query->latest()->get()->map(function ($task) {
+            if ($task->deadline) {
+                $task->deadline_formatted = \Carbon\Carbon::parse($task->deadline)->format('H:i d/m/Y');
+            }
+            return $task;
+        });
+
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
 
         return Inertia::render('Quanlycongviec', [
-            'tasks' => $query->latest()->get(),
+            'tasks' => $tasks,
             'filters' => $request->only(['search', 'priority'])
         ]);
     }

@@ -20,6 +20,7 @@ class Task extends Model
     ];
     protected $casts = [
     'created_by_admin' => 'boolean',
+    'deadline' => 'datetime',
     ];
     /**
      * Thiết lập mối quan hệ ngược lại với User.

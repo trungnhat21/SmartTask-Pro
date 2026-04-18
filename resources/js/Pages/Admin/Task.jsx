@@ -49,7 +49,9 @@ export default function Tasks({ auth, tasks, users, filters }) {
             id: task.id,
             title: task.title,
             status: task.status,
-            deadline: task.deadline,
+            deadline: task.deadline 
+                ? task.deadline.replace(' ', 'T').substring(0, 16) 
+                : '',
             user_id: task.user_id,
             priority: task.priority,
             description: task.description || '',
@@ -93,6 +95,15 @@ export default function Tasks({ auth, tasks, users, filters }) {
         }
     };
 
+    const formatDeadline = (deadlineString) => {
+        if (!deadlineString) return 'Chưa có';
+
+        const cleanDate = deadlineString.replace('T', ' ').substring(0, 16);
+        const [date, time] = cleanDate.split(' ');
+        const [y, m, d] = date.split('-');
+        return `${d}/${m}/${y} ${time}`;
+    };
+
     return (
         <AdminLayout
             auth={auth}
@@ -102,6 +113,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Filter Bar */}
                     <div className="bg-white p-4 mb-4 rounded-lg shadow flex flex-wrap items-center gap-4 text-sm">
                         <button 
                             onClick={() => router.get(route('admin.users.index'))} 
@@ -145,6 +157,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
                         </button>
                     </div>
 
+                    {/* Table */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <table className="min-w-full divide-y divide-gray-200 border">
                             <thead className="bg-gray-50">
@@ -175,7 +188,9 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                                 {task.priority}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{task.deadline}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {formatDeadline(task.deadline)}
+                                        </td>
                                         <td className="px-6 py-4 text-sm">
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                                                 task.status === 'Hoàn thành' ? 'bg-green-100 text-green-800' : 
@@ -202,6 +217,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
                 </div>
             </div>
 
+            {/* Modal Giao việc mới */}
             {isAssignModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border-t-4 border-green-500">
@@ -260,7 +276,8 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700">Hạn chót</label>
                                     <input 
-                                        type="date" 
+                                        type="datetime-local"
+                                        step="60"
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
                                         value={assignData.deadline}
                                         onChange={e => setAssignData('deadline', e.target.value)}
@@ -291,8 +308,9 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                     value={data.title}
                                     onChange={e => setData('title', e.target.value)}
                                 />
-                            </div>
                                 {editErrors.title && <div className="text-red-500 text-xs mt-1">{editErrors.title}</div>}
+                            </div>
+                            
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Độ ưu tiên</label>
@@ -334,7 +352,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Deadline</label>
-                                <input type="date" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                                <input type="datetime-local" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                                     value={data.deadline} 
                                     onChange={e => setData('deadline', e.target.value)}
                                  />

@@ -141,7 +141,11 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                                     {task.title}
                                                     {task.created_by_admin && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">ADMIN GIAO</span>}
                                                 </p>
-                                                <p className="text-sm text-gray-500">Hạn chót: {task.deadline}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    Hạn chót: <span className="font-medium text-gray-700">
+                                                        {task.deadline_formatted || task.deadline}
+                                                    </span>
+                                                </p>
                                             </div>
                                         </div>
 

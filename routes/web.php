@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/quan-ly-cong-viec/{task}', [TaskController::class, 'update'])->name('task.update');
 
     Route::delete('/quan-ly-cong-viec/{task}', [TaskController::class, 'destroy'])->name('task.destroy');
-    // Phải dùng POST vì chúng ta gửi một mảng ID lên
+    
     Route::post('/tasks/delete-multiple', [TaskController::class, 'deleteMultiple'])->name('task.delete-multiple');
 
     Route::patch('/quan-ly-cong-viec/{task}/update-status', [TaskController::class, 'updateStatus'])->name('task.update-status');
