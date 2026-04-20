@@ -10,9 +10,8 @@ use Inertia\Response;
 
 class EmailVerificationPromptController extends Controller
 {
-    /**
-     * Display the email verification prompt.
-     */
+
+    // Kiểm tra xác thực email để chuyển hướng về Dashboard
     public function __invoke(Request $request): RedirectResponse|Response
     {
         return $request->user()->hasVerifiedEmail()

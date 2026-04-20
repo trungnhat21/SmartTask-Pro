@@ -22,10 +22,7 @@ class Task extends Model
     'created_by_admin' => 'boolean',
     'deadline' => 'datetime',
     ];
-    /**
-     * Thiết lập mối quan hệ ngược lại với User.
-     * Một công việc thuộc về một người dùng (Trung Nhật).
-     */
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -8,11 +8,11 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller {
 
+    // Thống kê số liệu công việc và lấy danh sách các nhiệm vụ sắp đến hạn
     public function index()
     {
         $userId = auth()->id();
 
-        // 1. Lấy 5 task có hạn chót gần nhất (chưa hoàn thành)
         $upcomingTasks = Task::where('user_id', $userId)
             ->where('status', '!=', 'Hoàn thành')
             ->whereNotNull('deadline')
@@ -24,13 +24,11 @@ class DashboardController extends Controller {
                 return $task;
             });
 
-        // 2. Thống kê năng suất
         $totalTasks = Task::where('user_id', $userId)->count();
         $completedTasks = Task::where('user_id', $userId)
             ->where('status', 'Hoàn thành')
             ->count();
 
-        // Tính phần trăm (tránh chia cho 0)
         $percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
 
         return Inertia::render('Dashboard', [

@@ -68,6 +68,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Thống kê
                                 </NavLink>
+
+                                <NavLink
+                                    href={route('Chinhsach')}
+                                    active={route().current('Chinhsach')}
+                                >
+                                    Chính sách
+                                </NavLink>
                             </div>
                         </div>
 
@@ -205,7 +212,6 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
-            {/* SỬA ĐỔI: Chỉ hiển thị chữ Cảnh báo và nội dung thông báo */}
             {showError && flash && flash.error && (
                 <div className="mx-auto max-w-7xl mt-4 px-4 sm:px-6 lg:px-8">
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md transition-opacity duration-500" role="alert">

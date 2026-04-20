@@ -1,7 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 
-// Cập nhật dòng này: Thêm { auth, upcomingTasks, stats } vào trong ngoặc nhọn
 export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0, completed: 0, percentage: 0 } }) {
     return (
         <AuthenticatedLayout
@@ -16,15 +15,14 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                     
-                    {/* KHU VỰC 1: AI SUGGESTION */}
                     <div className="overflow-hidden bg-gradient-to-r from-indigo-500 to-purple-600 shadow-lg sm:rounded-lg">
                         <div className="p-6 text-white">
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">🤖</span>
-                                <h3 className="text-lg font-bold">Trợ lý AI phân tích:</h3>
+                                <h3 className="text-lg font-semibold">Trợ lý AI phân tích</h3>
                             </div>
                             <p className="mt-2 text-indigo-100">
-                                Chào {auth.user.name}! Bạn đang có <span className="font-bold">{upcomingTasks.length}</span> công việc sắp tới. 
+                                Chào {auth.user.name}! Bạn đang có <span className="font-bold">{upcomingTasks.length}</span> công việc gần đến hạn. 
                                 Hãy tập trung hoàn thành các mục có độ ưu tiên cao trước nhé
                             </p>
                         </div>
@@ -32,11 +30,11 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
-                        {/* KHU VỰC 2: CÔNG VIỆC CẦN LÀM NGAY */}
+
                         <div className="md:col-span-2 overflow-hidden bg-white shadow-sm sm:rounded-lg">
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-gray-700">Công việc cần làm ngay</h3>
+                                    <h3 className="font-semibold text-gray-700">Công việc cần làm ngay</h3>
                                     <Link href={route('Quanlycongviec')} className="text-sm text-indigo-600 hover:underline">Xem tất cả</Link>
                                 </div>
                                 
@@ -62,10 +60,10 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                             </div>
                         </div>
 
-                        {/* KHU VỰC 3: THỐNG KÊ NĂNG SUẤT */}
+
                         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                             <div className="p-6">
-                                <h3 className="font-bold text-gray-700 mb-4">Tiến độ công việc</h3>
+                                <h3 className="font-semibold text-gray-700 mb-4">Tiến độ công việc</h3>
                                 <div className="flex flex-col items-center justify-center py-4">
                                     <div 
                                         className="relative size-32 flex items-center justify-center rounded-full border-8 border-gray-100 text-2xl font-bold text-indigo-600"

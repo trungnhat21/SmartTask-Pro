@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
+use App\Http\Controllers\ThongkeController;
+use App\Http\Controllers\PDFController;
+use App\Http\Controllers\SupportController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -20,15 +23,13 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
+// Task User
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // Trang danh sách công việc
     Route::get('/quan-ly-cong-viec', [TaskController::class, 'index'])->name('Quanlycongviec');
 
-    // Trang hiển thị form thêm mới
     Route::get('/quan-ly-cong-viec/them-moi', [TaskController::class, 'create'])->name('task.create');
 
-    // Xử lý lưu dữ liệu khi bấm nút "LƯU CÔNG VIỆC"
     Route::post('/quan-ly-cong-viec/luu', [TaskController::class, 'store'])->name('task.store');
 
     Route::get('/quan-ly-cong-viec/{task}/edit', [TaskController::class, 'edit'])->name('task.edit');
@@ -47,15 +48,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
-Route::get('/Thong-ke', function () {
-    return Inertia::render('Thongke');
-})->middleware(['auth', 'verified'])->name('Thongke');
+// Thống kê
+Route::get('/Thong-ke', [ThongkeController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('Thongke');
 
+// Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Xuất PDF
+Route::get('/pdf-preview', [PDFController::class, 'index'])->name('pdf.index');
+Route::get('/pdf-export', [PDFController::class, 'export'])->name('pdf.export');
+
+// Chính sách
+Route::get('/chinh-sach', function () {
+    return Inertia::render('Chinhsach');
+})->name('Chinhsach');
+
+// Request
+Route::post('/support-store', [SupportController::class, 'store'])->name('support.store');
 
 //Admin
 Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admin')->name('admin.')->group(function () {
@@ -72,7 +87,6 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     Route::get('/tasks', [AdminTaskController::class, 'index'])->name('tasks.index');
     
     Route::delete('/tasks/destroy-all', [AdminTaskController::class, 'destroyAll'])->name('tasks.destroyAll');
-    // -----------------------
 
     Route::get('/tasks/create', [AdminTaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [AdminTaskController::class, 'store'])->name('tasks.store');

@@ -3,7 +3,6 @@ import { Head, useForm } from '@inertiajs/react';
 import TaskForm from './Partials/TaskForm';
 
 export default function Edit({ auth, task }) {
-    // Khởi tạo form với dữ liệu cũ của công việc
     const { data, setData, patch, processing, errors } = useForm({
         title: task.title || '',
         priority: task.priority || 'Trung bình',
@@ -13,7 +12,6 @@ export default function Edit({ auth, task }) {
 
     const submit = (e) => {
         e.preventDefault();
-        // Dùng patch để cập nhật dữ liệu
         patch(route('task.update', task.id));
     };
 
@@ -27,7 +25,6 @@ export default function Edit({ auth, task }) {
             <div className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8">
-                        {/* Sử dụng TaskForm chung, truyền isEdit=true */}
                         <TaskForm 
                             data={data} 
                             setData={setData} 

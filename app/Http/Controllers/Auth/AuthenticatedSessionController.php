@@ -13,9 +13,7 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
+    // Hiển thị trang giao diện đăng nhập cho người dùng
     public function create(): Response
     {
         return Inertia::render('Auth/Login', [
@@ -24,9 +22,7 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
+    // Xử lý xác thực thông tin đăng nhập và khởi tạo session
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
@@ -36,9 +32,7 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
+    // Đăng xuất người dùng, hủy phiên làm việc và làm mới mã bảo mật CSRF
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

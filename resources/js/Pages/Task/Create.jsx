@@ -3,7 +3,6 @@ import { Head, useForm } from '@inertiajs/react';
 import TaskForm from './Partials/TaskForm'; // Đảm bảo đường dẫn này đúng
 
 export default function Create({ auth }) {
-    // PHẢI NẰM TRONG HÀM: Khai báo form
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         priority: 'Trung bình',
@@ -11,7 +10,6 @@ export default function Create({ auth }) {
         description: '',
     });
 
-    // PHẢI NẰM TRONG HÀM: Xử lý submit
     const submit = (e) => {
         e.preventDefault();
         post(route('task.store'));
@@ -27,7 +25,6 @@ export default function Create({ auth }) {
             <div className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8">
-                        {/* Gọi component TaskForm và truyền đủ props */}
                         <TaskForm 
                             data={data} 
                             setData={setData} 

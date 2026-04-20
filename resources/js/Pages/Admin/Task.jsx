@@ -113,7 +113,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Filter Bar */}
+                    
                     <div className="bg-white p-4 mb-4 rounded-lg shadow flex flex-wrap items-center gap-4 text-sm">
                         <button 
                             onClick={() => router.get(route('admin.users.index'))} 
@@ -157,7 +157,6 @@ export default function Tasks({ auth, tasks, users, filters }) {
                         </button>
                     </div>
 
-                    {/* Table */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <table className="min-w-full divide-y divide-gray-200 border">
                             <thead className="bg-gray-50">
@@ -217,7 +216,6 @@ export default function Tasks({ auth, tasks, users, filters }) {
                 </div>
             </div>
 
-            {/* Modal Giao việc mới */}
             {isAssignModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border-t-4 border-green-500">

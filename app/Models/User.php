@@ -14,7 +14,6 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable //implements MustVerifyEmail
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     public function tasks()
@@ -22,11 +21,6 @@ class User extends Authenticatable //implements MustVerifyEmail
         return $this->hasMany(Task::class);
     }
     
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [

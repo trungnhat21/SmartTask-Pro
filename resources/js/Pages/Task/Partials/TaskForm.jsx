@@ -38,7 +38,7 @@ export default function TaskForm({ data, setData, errors, processing, submit, is
                     <InputLabel htmlFor="deadline" value="Hạn chót" />
                     <TextInput
                         id="deadline"
-                        type="date"
+                        type="datetime-local"
                         className="mt-1 block w-full"
                         value={data.deadline}
                         onChange={(e) => setData('deadline', e.target.value)}

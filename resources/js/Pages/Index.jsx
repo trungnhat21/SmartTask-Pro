@@ -48,7 +48,7 @@ export default function Index({ auth }) {
                             </div>
 
                             <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-                                {/* Chức năng 1: CRUD TASK */}
+
                                 <div className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-zinc-900 dark:ring-zinc-800">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10">
                                         <svg className="size-6 text-[#FF2D20]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@ export default function Index({ auth }) {
                                     </div>
                                 </div>
 
-                                {/* Chức năng 2: AI Gợi ý */}
+
                                 <div className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-zinc-900 dark:ring-zinc-800">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
                                         <svg className="size-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,7 +74,6 @@ export default function Index({ auth }) {
                                     </div>
                                 </div>
 
-                                {/* Chức năng 3: AI Chatbot */}
                                 <div className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-zinc-900 dark:ring-zinc-800">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-green-500/10">
                                         <svg className="size-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,7 +86,6 @@ export default function Index({ auth }) {
                                     </div>
                                 </div>
 
-                                {/* Chức năng 4: Thống kê */}
                                 <div className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-zinc-900 dark:ring-zinc-800">
                                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
                                         <svg className="size-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

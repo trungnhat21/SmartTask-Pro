@@ -16,19 +16,13 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+
     public function create(): Response
     {
         return Inertia::render('Auth/Register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
+    // Xử lý xác thực dữ liệu, khởi tạo người dùng mới và tiến hành đăng nhập tự động
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

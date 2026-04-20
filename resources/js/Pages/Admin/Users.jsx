@@ -1,14 +1,11 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, Link } from '@inertiajs/react';
-import { useState } from 'react'; // Thêm useState để quản lý input
+import { useState } from 'react';
 
-// Nhận thêm props 'filters' từ Controller gửi qua
 export default function Users({ auth, users, filters = {} }) {
-    // 1. Quản lý trạng thái tìm kiếm
     const [search, setSearch] = useState(filters.search || '');
     const [role, setRole] = useState(filters.role || '');
 
-    // 2. Hàm xử lý gửi yêu cầu tìm kiếm về Server
     const handleSearch = () => {
         router.get(route('admin.users.index'), 
             { search: search, role: role }, 
@@ -45,7 +42,6 @@ export default function Users({ auth, users, filters = {} }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         
-                        {/* --- PHẦN TÌM KIẾM VÀ LỌC (MỚI THÊM) --- */}
                         <div className="mb-6 flex flex-wrap gap-4 items-center">
                             <input
                                 type="text"
@@ -53,7 +49,7 @@ export default function Users({ auth, users, filters = {} }) {
                                 className="border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500 w-full md:w-64"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                onKeyUp={(e) => e.key === 'Enter' && handleSearch()} // Nhấn Enter để tìm
+                                onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
                             />
 
                             <select
@@ -61,7 +57,7 @@ export default function Users({ auth, users, filters = {} }) {
                                 value={role}
                                 onChange={(e) => {
                                     setRole(e.target.value);
-                                    // Tự động lọc khi đổi vai trò trong dropdown
+
                                     router.get(route('admin.users.index'), 
                                         { search: search, role: e.target.value }, 
                                         { preserveState: true }

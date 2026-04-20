@@ -12,17 +12,13 @@ use Inertia\Response;
 
 class ConfirmablePasswordController extends Controller
 {
-    /**
-     * Show the confirm password view.
-     */
+    // Hiển thị giao diện yêu cầu xác nhận mật khẩu
     public function show(): Response
     {
         return Inertia::render('Auth/ConfirmPassword');
     }
 
-    /**
-     * Confirm the user's password.
-     */
+    // Kiểm tra mật khẩu người dùng nhập vào và lưu thời điểm xác nhận vào hệ thống
     public function store(Request $request): RedirectResponse
     {
         if (! Auth::guard('web')->validate([

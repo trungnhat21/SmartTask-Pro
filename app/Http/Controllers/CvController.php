@@ -9,21 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class CvController extends Controller
 {
+    // Lấy danh sách công việc, tính toán điểm ưu tiên và hiển thị lên giao diện
     public function index()
     {
-        // 1. Lấy danh sách công việc chưa hoàn thành của người dùng hiện tại
+
         $tasks = Task::where('user_id', Auth::id())
                     ->where('status', '!=', 'Hoàn thành')
                     ->where('status', '!=', 'Quá hạn')
                     ->get();
 
-        // 2. Thuật toán sắp xếp và xử lý dữ liệu thông minh
         $smartTasks = $tasks->map(function ($task) {
         $score = 0;
         $now = now();
         $deadline = $task->deadline ? Carbon::parse($task->deadline) : null;
 
-            // Điểm ưu tiên
         if ($task->priority === 'Cao') {
             $score += 100;
         } elseif ($task->priority === 'Trung bình') {
@@ -32,7 +31,6 @@ class CvController extends Controller
             $score += 10;
         }
 
-            // Điểm Deadline
         $task->warning = null; 
             if ($deadline) {
                 $daysLeft = $now->diffInDays($deadline, false);
@@ -58,6 +56,8 @@ class CvController extends Controller
             'smartTasks' => $smartTasks
         ]);
     }
+
+    // Phân tích độ ưu tiên và thời hạn để đưa ra lời khuyên xử lý công việc phù hợp
     public static function generateAdvice($priority, $deadline)
     {
         $now = now();

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+    // Lấy danh sách công việc hệ thống, lọc dữ liệu và tính toán trạng thái quá hạn
     public function index(Request $request)
     {
         $query = Task::with('user');
@@ -46,6 +47,7 @@ class TaskController extends Controller
         ]);
     }
 
+    // Xóa tất cả công việc của một người dùng cụ thể
     public function destroyAll(Request $request)
     {
         $query = Task::query();
@@ -57,12 +59,14 @@ class TaskController extends Controller
         return back()->with('success', 'Đã xóa danh sách công việc.');
     }
 
+    // Xóa một công việc bất kỳ theo ID
     public function destroy(Task $task)
     {
         $task->delete();
         return back()->with('success', 'Đã xóa công việc thành công.');
     }
 
+    // Cập nhật thông tin chi tiết và thời hạn của công việc
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
@@ -83,6 +87,7 @@ class TaskController extends Controller
         return back()->with('success', 'Cập nhật thành công!');
     }
 
+    // Khởi tạo công việc mới và trực tiếp giao cho một người dùng trong hệ thống
     public function store(Request $request)
     {
         $validated = $request->validate([

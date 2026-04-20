@@ -7,6 +7,7 @@ use Inertia\Inertia;
 
 class TaskController extends Controller
 {
+    // Hiển thị danh sách công việc cá nhân, tìm kiếm và định dạng ngày tháng
     public function index(Request $request)
     {
         $query = Task::where('user_id', auth()->id());
@@ -32,12 +33,13 @@ class TaskController extends Controller
         ]);
     }
 
+    // Tạo mới một công việc
     public function create()
     {
         return Inertia::render('Task/Create');
     }
 
-    // Chỉnh sửa: Chặn nếu là task của Admin
+    //Chỉnh sửa công việc và chặn quyền can thiệp vào việc của Admin
     public function edit(Task $task)
     {
         if ($task->user_id !== auth()->id() || $task->created_by_admin) {
@@ -49,7 +51,7 @@ class TaskController extends Controller
         ]);
     }
 
-    // Cập nhật: Chặn nếu là task của Admin
+    // Cập nhật nội dung công việc sau khi đã xác thực dữ liệu và kiểm tra quyền sở hữu
     public function update(Request $request, Task $task)
     {
         if ($task->user_id !== auth()->id() || $task->created_by_admin) {
@@ -72,6 +74,7 @@ class TaskController extends Controller
         return redirect()->route('Quanlycongviec');
     }
 
+    // Xóa một công việc cá nhân và ngăn việc xóa các nhiệm vụ do Admin giao
     public function destroy(Task $task)
     {
         if ($task->user_id !== auth()->id() || $task->created_by_admin) {
@@ -83,6 +86,7 @@ class TaskController extends Controller
         return redirect()->route('Quanlycongviec');
     }
 
+    // Xóa toàn bộ công việc cùng lúc dựa trên danh sách ID được chọn
     public function deleteMultiple(Request $request)
     {
         $ids = $request->input('ids');
@@ -97,6 +101,7 @@ class TaskController extends Controller
         return redirect()->back();
     }
 
+    // Cập nhật trạng thái tiến độ của công việc và chặn xử lý đối với các việc đã quá hạn
     public function updateStatus(Request $request, Task $task)
     {
         if ($task->user_id !== auth()->id()) {
@@ -113,6 +118,7 @@ class TaskController extends Controller
         return redirect()->back()->with('success', 'Đã cập nhật tiến độ!');
     }
     
+    // Lưu trữ công việc mới database
     public function store(Request $request)
     {
         $validated = $request->validate([

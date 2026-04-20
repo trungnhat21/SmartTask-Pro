@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
-import Dropdown from '@/Components/Dropdown'; // Đảm bảo bạn đã import Component này
+import Dropdown from '@/Components/Dropdown';
 
 export default function AdminLayout({ header, children }) {
     const { auth } = usePage().props;

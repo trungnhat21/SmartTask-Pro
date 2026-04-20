@@ -12,7 +12,6 @@ export default function Cvthongminh({ auth, smartTasks }) {
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     
-                    {/* Header Card: Hệ thống phân tích */}
                     <div className="relative overflow-hidden flex items-start gap-4 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm mb-8">
                         <div className="absolute top-0 right-0 p-2 opacity-10">
                             <i className="fa-solid fa-gears text-6xl text-blue-500"></i>
@@ -21,14 +20,14 @@ export default function Cvthongminh({ auth, smartTasks }) {
                             <i className="fa-solid fa-bolt text-white text-xl"></i>
                         </div>
                         <div className="relative z-10">
-                            <h3 className="text-lg font-bold text-gray-900">Hệ thống Phân tích Công việc</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">Hệ thống Phân tích Công việc</h3>
                             <p className="mt-1 text-gray-600">
                                 Chào <strong>{auth.user.name}</strong>, hệ thống đã lọc và đưa các <strong>nhiệm vụ trọng tâm</strong> lên đầu dựa trên độ ưu tiên và thời gian
                             </p>
                         </div>
                     </div>
 
-                    {/* Danh sách công việc */}
+
                     <div className="space-y-6">
                         {smartTasks && smartTasks.filter(t => t.status !== 'Quá hạn' && t.status !== 'Hoàn thành').length > 0 ? (
                             smartTasks
@@ -44,10 +43,10 @@ export default function Cvthongminh({ auth, smartTasks }) {
                                             : 'bg-white border-gray-200 shadow-sm opacity-90'
                                         }`}
                                     >
-                                    {/* Nhãn trạng thái */}
+
                                     <div className="absolute -top-3 left-6 flex gap-2">
                                         {task.priority === 'Cao' && (
-                                            <div className="flex items-center gap-1 bg-blue-600 text-white text-[10px] px-3 py-1 rounded-full uppercase font-black tracking-widest shadow-md">
+                                            <div className="flex items-center gap-1 bg-blue-600 text-white text-[10px] px-3 py-1 rounded-full uppercase font-semibold tracking-widest shadow-md">
                                                 <i className="fa-solid fa-star"></i>
                                                 Nhiệm vụ trọng tâm
                                             </div>
@@ -63,7 +62,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
                                     
                                     <div className="flex justify-between items-start mb-4 pt-2">
                                         <div className="flex-1">
-                                            <h4 className={`text-xl font-extrabold ${task.priority === 'Cao' ? 'text-blue-950' : 'text-gray-800'}`}>
+                                            <h4 className={`text-xl font-semibold ${task.priority === 'Cao' ? 'text-blue-950' : 'text-gray-800'}`}>
                                                 {task.title}
                                             </h4>
                                             <div className="flex items-center gap-4 mt-2">

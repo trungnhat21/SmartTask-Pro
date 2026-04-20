@@ -13,9 +13,6 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): Response
     {
         return Inertia::render('Profile/Edit', [
@@ -24,9 +21,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    // Cập nhật thông tin hồ sơ mới
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -41,9 +36,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    // Xác nhận mật khẩu để thực hiện xóa tài khoản, đăng xuất và hủy toàn bộ phiên làm việc
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([

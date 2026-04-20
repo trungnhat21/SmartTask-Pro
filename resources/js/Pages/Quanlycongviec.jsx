@@ -137,7 +137,7 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="font-bold text-gray-800">
+                                                <p className="font-semibold text-gray-800">
                                                     {task.title}
                                                     {task.created_by_admin && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">ADMIN GIAO</span>}
                                                 </p>
@@ -217,7 +217,6 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                 </div>
             </div>
 
-            {/* MODAL CHI TIẾT CÔNG VIỆC */}
             {isModalOpen && selectedTask && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
