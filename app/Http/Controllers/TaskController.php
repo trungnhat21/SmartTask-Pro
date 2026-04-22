@@ -16,19 +16,44 @@ class TaskController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $tasks = $query->latest()->get()->map(function ($task) {
-            if ($task->deadline) {
-                $task->deadline_formatted = \Carbon\Carbon::parse($task->deadline)->format('H:i d/m/Y');
-            }
-            return $task;
-        });
-
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
 
+        $tasks = $query->latest()->get()->map(function ($task) {
+            if ($task->deadline) {
+                $now = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+                $deadline = \Carbon\Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');
+
+                if ($now->gt($deadline) && $task->status !== 'Hoàn thành' && $task->status !== 'Quá hạn') {
+                    \App\Models\Task::where('id', $task->id)->update(['status' => 'Quá hạn']);
+                    $task->status = 'Quá hạn';
+                }
+
+                $diffInMinutes = $now->diffInMinutes($deadline, false);
+                
+                $task->days_left = $diffInMinutes > 0 ? (int) ceil($diffInMinutes / (60 * 24)) : 0;
+
+                $task->deadline_formatted = $deadline->format('H:i d/m/Y');
+
+                $task->is_near_deadline = (
+                    $now->gt($deadline->copy()->subHours(48)) && 
+                    $now->lt($deadline) && 
+                    $task->status !== 'Hoàn thành' && 
+                    $task->status !== 'Quá hạn'
+                );
+            } else {
+                $task->is_near_deadline = false;
+                $task->days_left = null;
+            }
+            return $task;
+        });
+
+        $nearDeadlineCount = $tasks->where('is_near_deadline', true)->count();
+
         return Inertia::render('Quanlycongviec', [
             'tasks' => $tasks,
+            'nearDeadlineCount' => $nearDeadlineCount,
             'filters' => $request->only(['search', 'priority'])
         ]);
     }
@@ -55,17 +80,26 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         if ($task->user_id !== auth()->id() || $task->created_by_admin) {
-            abort(403, 'Bạn không có quyền cập nhật công việc của Admin.');
+            abort(403, 'Bạn không có quyền cập nhật công việc này.');
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|string',
-            'deadline' => 'nullable|date|after_or_equal:today',
+            'deadline' => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $inputDate = \Carbon\Carbon::parse($value, 'Asia/Ho_Chi_Minh');
+                    $now = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+                    if ($inputDate->lt($now)) {
+                        $fail('Hạn chót không được nhỏ hơn thời gian hiện tại!');
+                    }
+                },
+            ],
             'description' => 'nullable|string',
         ], [
-            'deadline.after_or_equal' => 'Hạn chót không được nhỏ hơn ngày hiện tại',
-            'deadline.date' => 'Định dạng ngày tháng không hợp lệ',
             'title.required' => 'Tên công việc không được để trống',
         ]);
 
@@ -124,15 +158,24 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'priority' => 'required|string',
-            'deadline' => 'required|date|after:today',
+            'deadline' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $inputDate = \Carbon\Carbon::parse($value, 'Asia/Ho_Chi_Minh');
+                    $now = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
+                    if ($inputDate->lt($now)) {
+                        $fail('Hạn chót không được là thời gian trong quá khứ!');
+                    }
+                },
+            ],
             'description' => 'nullable|string',
         ], [
             'title.required' => 'Vui lòng nhập tên công việc.',
             'deadline.required' => 'Vui lòng chọn hạn chót.',
-            'deadline.after' => 'Hạn chót không được nhỏ hơn hoặc bằng ngày hiện tại.',
         ]);
 
-        $validated['status'] = 'Mới'; 
+        $validated['status'] = 'Chưa làm'; 
         $validated['user_id'] = auth()->id();
         $validated['created_by_admin'] = false; 
 

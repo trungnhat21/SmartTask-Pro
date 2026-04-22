@@ -14,7 +14,8 @@ class DashboardController extends Controller {
         $userId = auth()->id();
 
         $upcomingTasks = Task::where('user_id', $userId)
-            ->where('status', '!=', 'Hoàn thành')
+            ->whereIn('status', ['Mới', 'Chưa làm', 'Đang làm'])
+            ->where('deadline', '>=', now()->startOfDay()) 
             ->whereNotNull('deadline')
             ->orderBy('deadline', 'asc')
             ->limit(5)

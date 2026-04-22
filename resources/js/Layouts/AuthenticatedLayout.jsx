@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const { auth, flash } = usePage().props;
+    const { auth, flash, nearDeadlineCount } = usePage().props;
     const user = auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -52,7 +52,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href={route('Quanlycongviec')}
                                     active={route().current('Quanlycongviec')}
                                 >
-                                    Quản lý công việc
+                                    <span className="relative"> 
+                                        Quản lý công việc
+                                        {nearDeadlineCount > 0 && (
+                                            <span className="absolute -top-3 -right-5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm">
+                                                {nearDeadlineCount}
+                                            </span>
+                                        )}
+                                    </span>
                                 </NavLink>
 
                                 <NavLink

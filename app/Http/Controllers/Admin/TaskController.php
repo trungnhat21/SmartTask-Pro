@@ -30,13 +30,18 @@ class TaskController extends Controller
 
         $tasks = $query->orderBy('deadline', 'asc')->get()->map(function ($task) {
             if ($task->deadline) {
-                $deadline = Carbon::parse($task->deadline);
-                if ($task->status !== 'Hoàn thành' && $deadline->isPast() && !$deadline->isToday()) {
+                $now = Carbon::now('Asia/Ho_Chi_Minh');
+                $deadline = Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');
+
+                if ($task->status !== 'Hoàn thành' && $now->gt($deadline)) {
                     $task->status = 'Quá hạn';
-                } elseif ($task->status === 'Mới' || !$task->status) {
-                    $task->status = 'Chưa làm';
                 }
+            } 
+            
+            if ($task->status === 'Mới' || !$task->status) {
+                $task->status = 'Chưa làm';
             }
+            
             return $task;
         });
 
@@ -72,15 +77,25 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|string',
-            'deadline' => 'nullable', 
+            'deadline' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $inputDate = Carbon::parse($value, 'Asia/Ho_Chi_Minh');
+                    $now = Carbon::now('Asia/Ho_Chi_Minh');
+                    if ($inputDate->lt($now)) {
+                        $fail('Hạn chót không được là thời gian trong quá khứ!');
+                    }
+                },
+            ], 
             'priority' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
         ]);
 
         if (!empty($request->deadline)) {
-            $cleanDeadline = str_replace('T', ' ', $request->deadline);
-            $validated['deadline'] = Carbon::parse($cleanDeadline)->format('Y-m-d H:i:s');
+            $validated['deadline'] = Carbon::parse($request->deadline, 'Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
         }
 
         $task->update($validated);
@@ -93,14 +108,24 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id',
-            'deadline' => 'required', 
+            'deadline' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $inputDate = Carbon::parse($value, 'Asia/Ho_Chi_Minh');
+                    $now = Carbon::now('Asia/Ho_Chi_Minh');
+                    if ($inputDate->lt($now)) {
+                        $fail('Hạn chót không được là thời gian trong quá khứ!');
+                    }
+                },
+            ], 
             'priority' => 'required|string',
             'status' => 'required|string',
             'description' => 'nullable|string',
         ]);
 
-        $cleanDeadline = str_replace('T', ' ', $request->deadline);
-        $validated['deadline'] = Carbon::parse($cleanDeadline)->format('Y-m-d H:i:s');
+        $validated['deadline'] = Carbon::parse($request->deadline, 'Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
 
         Task::create([
             'title' => $validated['title'],

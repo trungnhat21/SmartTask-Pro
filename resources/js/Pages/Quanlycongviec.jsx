@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Quanlycongviec({ auth, tasks, filters }) { 
+export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount }) { 
     const [search, setSearch] = useState(filters?.search || '');
     const [priority, setPriority] = useState(filters?.priority || '');
     const [selectedIds, setSelectedIds] = useState([]);
@@ -41,7 +41,7 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
     };
 
     const deleteSelected = () => {
-        if (confirm(`Trung có chắc muốn xóa ${selectedIds.length} công việc đã chọn?`)) {
+        if (confirm(`Bạn có chắc muốn xóa ${selectedIds.length} công việc đã chọn?`)) {
             router.post(route('task.delete-multiple'), {
                 ids: selectedIds
             }, {
@@ -53,7 +53,16 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Danh sách Công việc</h2>}
+            header={
+                <div className="flex items-center gap-4">
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Danh sách Công việc</h2>
+                    {nearDeadlineCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-sm">
+                            <i className="fa-solid fa-clock mr-1"></i> {nearDeadlineCount} sắp đến hạn!
+                        </span>
+                    )}
+                </div>
+            }
         >
             <Head title="Quản lý công việc" />
 
@@ -120,9 +129,16 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                         </div>
 
                         <div className="space-y-3">
-                            {tasks && tasks.length > 0 ? (
-                                tasks.map((task) => (
-                                    <div key={task.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition">
+                                {tasks && tasks.length > 0 ? (
+                                    tasks.map((task) => (
+                                    <div 
+                                        key={task.id} 
+                                        className={`flex items-center justify-between p-4 border rounded-lg transition-all ${
+                                            task.status === 'Hoàn thành' 
+                                            ? 'bg-gray-50 border-gray-100 opacity-75'
+                                            : 'bg-white border-gray-200 hover:bg-gray-50 shadow-sm' 
+                                        }`}
+                                    >
                                         <div className="flex items-center gap-4">
                                             {!task.created_by_admin ? (
                                                 <input 
@@ -137,12 +153,28 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="font-semibold text-gray-800">
+                                                <p className={`font-semibold transition-all ${
+                                                    task.status === 'Hoàn thành' ? 'text-gray-400 line-through' : 'text-gray-800'
+                                                }`}>
                                                     {task.title}
-                                                    {task.created_by_admin && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">ADMIN GIAO</span>}
+                                                    {task.created_by_admin && (
+                                                        <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded line-none inline-block">
+                                                            ADMIN GIAO
+                                                        </span>
+                                                    )}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Hạn chót: <span className="font-medium text-gray-700">
+                                                {task.is_near_deadline && (
+                                                    <span className="ml-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-sm font-semibold inline-block">
+                                                        {task.days_left === 0 
+                                                            ? "SẮP QUÁ HẠN (TRONG HÔM NAY)" 
+                                                            : `CÒN ${task.days_left} NGÀY CHO TỚI KHI QUÁ HẠN`
+                                                        }
+                                                    </span>
+                                                )}
+                                                <p className={`text-sm transition-all ${
+                                                    task.status === 'Hoàn thành' ? 'text-gray-300' : 'text-gray-500'
+                                                }`}>
+                                                    Hạn chót: <span className="font-medium">
                                                         {task.deadline_formatted || task.deadline}
                                                     </span>
                                                 </p>
@@ -150,13 +182,20 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                         </div>
 
                                         <div className="flex items-center gap-6">
-                                            <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                                                task.priority === 'Cao' ? 'bg-red-100 text-red-600' : 
-                                                task.priority === 'Trung bình' ? 'bg-blue-100 text-blue-600' : 
-                                                'bg-gray-100 text-gray-600'
-                                            }`}>
-                                                {task.priority}
-                                            </span>
+                                            {task.status === 'Hoàn thành' ? (
+                                                <span className="px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-green-700 flex items-center gap-1">
+                                                    <i className="fa-solid fa-check-double text-[10px]"></i>
+                                                    Đã xong
+                                                </span>
+                                            ) : (
+                                                <span className={`px-3 py-1 text-xs rounded-full font-medium ${
+                                                    task.priority === 'Cao' ? 'bg-red-100 text-red-600' : 
+                                                    task.priority === 'Trung bình' ? 'bg-blue-100 text-blue-600' : 
+                                                    'bg-gray-100 text-gray-600'
+                                                }`}>
+                                                    {task.priority}
+                                                </span>
+                                            )}
                                             {task.status === 'Quá hạn' ? (
                                                 <span className="text-red-600 font-bold text-sm px-2">
                                                     Quá hạn
@@ -165,12 +204,22 @@ export default function Quanlycongviec({ auth, tasks, filters }) {
                                                 <select 
                                                     value={task.status || 'Chưa làm'} 
                                                     onChange={(e) => updateStatus(task.id, e.target.value)}
-                                                    
-                                                    className="text-sm border-gray-300 rounded-md py-1 focus:ring-indigo-500 bg-white"
-                                                    >
+                                                    disabled={task.status === 'Hoàn thành'}
+                                                    className={`text-sm border-gray-300 rounded-md py-1 focus:ring-indigo-500 ${
+                                                        task.status === 'Hoàn thành' ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
+                                                    }`}
+                                                >
+                                                    {task.status === 'Chưa làm' && (
                                                         <option value="Chưa làm">Chưa làm</option>
+                                                    )}
+
+                                                    {(task.status === 'Chưa làm' || task.status === 'Đang làm') && (
                                                         <option value="Đang làm">Đang làm</option>
+                                                    )}
+
+                                                    {(task.status === 'Đang làm' || task.status === 'Hoàn thành') && (
                                                         <option value="Hoàn thành">Hoàn thành</option>
+                                                    )}
                                                 </select>
                                             )}
                                             <div className="flex gap-4 items-center">
