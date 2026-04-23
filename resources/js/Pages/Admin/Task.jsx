@@ -6,6 +6,9 @@ export default function Tasks({ auth, tasks, users, filters }) {
     const [priority, setPriority] = useState(filters.priority || '');
     const [status, setStatus] = useState(filters.status || '');
 
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [reviewTask, setReviewTask] = useState(null);
+
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const { 
         data: assignData, 
@@ -59,6 +62,24 @@ export default function Tasks({ auth, tasks, users, filters }) {
         setIsModalOpen(true);
     };
 
+    const openReviewModal = (task) => {
+        setReviewTask(task);
+        setIsReviewModalOpen(true);
+    };
+
+    const handleApprove = (e) => {
+    if (e) e.preventDefault();
+    router.patch(route('admin.tasks.approve', reviewTask.id), {}, {
+        onSuccess: () => setIsReviewModalOpen(false)
+    });
+};
+
+const handleReject = (e) => {
+    if (e) e.preventDefault();
+    router.patch(route('admin.tasks.reject', reviewTask.id), {}, {
+        onSuccess: () => setIsReviewModalOpen(false)
+    });
+};
     const handleUpdate = (e) => {
         e.preventDefault();
         patch(route('admin.tasks.update', data.id), {
@@ -138,8 +159,10 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                 <option value="">Tất cả</option>
                                 <option value="Chưa làm">Chưa làm</option>
                                 <option value="Đang làm">Đang làm</option>
+                                <option value="Chờ duyệt">Chờ duyệt</option>
                                 <option value="Hoàn thành">Hoàn thành</option>
                                 <option value="Quá hạn">Quá hạn</option>
+                                <option value="Từ chối">Từ chối</option>
                             </select>
                         </div>
 
@@ -193,12 +216,24 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                         <td className="px-6 py-4 text-sm">
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                                                 task.status === 'Hoàn thành' ? 'bg-green-100 text-green-800' : 
-                                                task.status === 'Quá hạn' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                                task.status === 'Chờ duyệt' ? 'bg-yellow-100 text-yellow-800' :
+                                                task.status === 'Từ chối' ? 'bg-orange-100 text-orange-800' :
+                                                task.status === 'Quá hạn' ? 'bg-red-100 text-red-800' : 'bg-blue-50 text-blue-800'
                                             }`}>
                                                 {task.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm space-x-5">
+                                            {task.status === 'Chờ duyệt' && (
+                                                <button 
+                                                    onClick={() => openReviewModal(task)} 
+                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                    title="Duyệt báo cáo"
+                                                >
+                                                    <i className="fa-solid fa-file-signature text-lg"></i>
+                                                </button>
+                                            )}
+
                                             <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 font-medium">
                                                 <i className="fa fa-pencil" aria-hidden="true"></i></button>
                                             <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 font-medium">
@@ -215,6 +250,64 @@ export default function Tasks({ auth, tasks, users, filters }) {
                     </div>
                 </div>
             </div>
+
+            {isReviewModalOpen && reviewTask && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70] p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
+                        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                            <h3 className="font-bold text-gray-800 text-lg">🔍 Xem báo cáo: {reviewTask.title}</h3>
+                            <button onClick={() => setIsReviewModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition">
+                                <i className="fa fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 bg-gray-100 flex flex-col overflow-hidden">
+                            {reviewTask.report_file ? (
+                                (() => {
+                                    const fileExt = reviewTask.report_file.split('.').pop().toLowerCase();
+                                    const fileUrl = reviewTask.report_url;
+
+                                    if (fileExt === 'pdf') {
+                                        return (
+                                            <iframe 
+                                                src={`${fileUrl}#toolbar=0`} 
+                                                className="w-full h-full min-h-[600px] border-none"
+                                            />
+                                        );
+                                    } 
+
+                                    return (
+                                        <div className="flex flex-col items-center justify-center h-full p-20 text-gray-500">
+                                            <i className="fa-regular fa-file-zipper text-6xl mb-4"></i>
+                                            <p>Định dạng này không hỗ trợ xem trực tiếp.</p>
+                                            <a href={fileUrl} download className="mt-4 px-4 py-2 bg-blue-600 text-white rounded shadow">Tải về máy</a>
+                                        </div>
+                                    );
+                                })()
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-500">
+                                    Không có file đính kèm.
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 border-t bg-white flex justify-between items-center">
+                            <div className="text-sm">
+                                <span className="text-gray-500">Tên file:</span> 
+                                <span className="ml-2 font-medium text-blue-600">{reviewTask.report_file?.split('/').pop()}</span>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={(e) => handleReject(e)} className="px-6 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg font-bold hover:bg-red-100 transition">
+                                    Từ chối báo cáo
+                                </button>
+                                <button onClick={(e) => handleApprove(e)} className="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-lg transition">
+                                    Duyệt hoàn thành
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {isAssignModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -323,8 +416,10 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                     <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value={data.status} onChange={e => setData('status', e.target.value)}>
                                         <option value="Chưa làm">Chưa làm</option>
                                         <option value="Đang làm">Đang làm</option>
+                                        <option value="Chờ duyệt">Chờ duyệt</option>
                                         <option value="Hoàn thành">Hoàn thành</option>
                                         <option value="Quá hạn">Quá hạn</option>
+                                        <option value="Từ chối">Từ chối</option>
                                     </select>
                                 </div>
                             </div>

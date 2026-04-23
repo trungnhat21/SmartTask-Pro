@@ -93,6 +93,8 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     Route::get('/tasks/{task}/edit', [AdminTaskController::class, 'edit'])->name('tasks.edit');
     Route::patch('/tasks/{task}', [AdminTaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [AdminTaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::patch('/tasks/{id}/approve', [AdminTaskController::class, 'approve'])->name('tasks.approve');
+    Route::patch('/tasks/{id}/reject', [AdminTaskController::class, 'reject'])->name('tasks.reject');
 });
 
 require __DIR__.'/auth.php';

@@ -17,6 +17,7 @@ class Task extends Model
         'description',
         'status',
         'created_by_admin',
+        'report_file',
     ];
     protected $casts = [
     'created_by_admin' => 'boolean',

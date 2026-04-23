@@ -25,7 +25,7 @@ class TaskController extends Controller
                 $now = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
                 $deadline = \Carbon\Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');
 
-                if ($now->gt($deadline) && $task->status !== 'Hoàn thành' && $task->status !== 'Quá hạn') {
+                if ($now->gt($deadline) && $task->status !== 'Hoàn thành' && $task->status !== 'Quá hạn' && $task->status !== 'Chờ duyệt') {
                     \App\Models\Task::where('id', $task->id)->update(['status' => 'Quá hạn']);
                     $task->status = 'Quá hạn';
                 }
@@ -138,18 +138,31 @@ class TaskController extends Controller
     // Cập nhật trạng thái tiến độ của công việc và chặn xử lý đối với các việc đã quá hạn
     public function updateStatus(Request $request, Task $task)
     {
-        if ($task->user_id !== auth()->id()) {
-            abort(403);
+        if ($task->user_id !== auth()->id()) abort(403);
+
+        if ($task->created_by_admin && $request->status === 'Hoàn thành') {
+            $request->validate([
+                'report_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+            ]);
+
+            if ($request->hasFile('report_file')) {
+
+                if ($task->report_file && Storage::disk('public')->exists($task->report_file)) {
+                Storage::disk('public')->delete($task->report_file);
+                }
+
+                $path = $request->file('report_file')->store('reports', 'public');
+                
+                $task->update([
+                    'status' => 'Chờ duyệt',
+                    'report_file' => $path
+                ]);
+                return redirect()->back()->with('success', 'Báo cáo đã được gửi, vui lòng chờ duyệt!');
+            }
         }
 
-        if ($task->status === 'Quá hạn') {
-            return back()->with('error', 'Công việc đã quá hạn, không thể thay đổi trạng thái!');
-        }
-        $task->update([
-            'status' => $request->status
-        ]);
-
-        return redirect()->back()->with('success', 'Đã cập nhật tiến độ!');
+        $task->update(['status' => $request->status]);
+        return redirect()->back()->with('success', 'Đã cập nhật trạng thái!');
     }
     
     // Lưu trữ công việc mới database

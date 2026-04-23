@@ -42,6 +42,12 @@ class TaskController extends Controller
                 $task->status = 'Chưa làm';
             }
             
+            if ($task->report_file) {
+                $task->report_url = asset('storage/' . $task->report_file);
+            } else {
+                $task->report_url = null;
+            }
+
             return $task;
         });
 
@@ -100,6 +106,26 @@ class TaskController extends Controller
 
         $task->update($validated);
         return back()->with('success', 'Cập nhật thành công!');
+    }
+
+    public function approve($id)
+    {
+        $task = Task::findOrFail($id);
+        $task->update(['status' => 'Hoàn thành']);
+        return back()->with('success', 'Đã duyệt công việc.');
+    }
+
+    public function reject($id)
+    {
+        $task = Task::findOrFail($id);
+        if ($task->report_file) {
+            \Storage::disk('public')->delete($task->report_file);
+        }
+        $task->update([
+            'status' => 'Từ chối',
+            'report_file' => null
+        ]);
+        return back()->with('success', 'Đã từ chối báo cáo.');
     }
 
     // Khởi tạo công việc mới và trực tiếp giao cho một người dùng trong hệ thống

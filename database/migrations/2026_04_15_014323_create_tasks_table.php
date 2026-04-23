@@ -16,10 +16,11 @@ return new class extends Migration
         $table->foreignId('user_id')->constrained()->onDelete('cascade');
         $table->string('title');
         $table->string('priority')->default('Trung bình');
-        $table->date('deadline');
+        $table->dateTime('deadline');
         $table->text('description')->nullable();
         $table->string('status')->default('Chưa làm');
         $table->timestamps();
+        $table->string('report_file')->nullable();
         $table->boolean('created_by_admin')->default(false);
     });
 }
