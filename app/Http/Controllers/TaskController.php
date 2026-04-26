@@ -142,8 +142,12 @@ class TaskController extends Controller
 
         if ($task->created_by_admin && $request->status === 'Hoàn thành') {
             $request->validate([
-                'report_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
-            ]);
+                // 'report_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+                'report_file' => 'required|file|mimes:pdf|max:10240'
+            ], [
+            'report_file.max'      => 'Dung lượng tệp không được vượt quá 10MB',
+            'report_file.mimes'    => 'Chỉ chấp nhận tệp báo cáo định dạng PDF',
+        ]);
 
             if ($request->hasFile('report_file')) {
 

@@ -33,7 +33,7 @@ class TaskController extends Controller
                 $now = Carbon::now('Asia/Ho_Chi_Minh');
                 $deadline = Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');
 
-                if ($task->status !== 'Hoàn thành' && $now->gt($deadline)) {
+                if ($task->status !== 'Hoàn thành' &&  $task->status !== 'Chờ duyệt' && $now->gt($deadline)) {
                     $task->status = 'Quá hạn';
                 }
             } 
@@ -43,6 +43,7 @@ class TaskController extends Controller
             }
             
             if ($task->report_file) {
+                // $task->report_url = asset('storage/app/public/' . $task->report_file);
                 $task->report_url = asset('storage/' . $task->report_file);
             } else {
                 $task->report_url = null;

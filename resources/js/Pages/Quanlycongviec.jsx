@@ -16,6 +16,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState(null);
     const [file, setFile] = useState(null);
+    const [errors, setErrors] = useState({});
 
     const openModal = (task) => {
         setSelectedTask(task);
@@ -50,6 +51,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
 
     const handleSendReport = (e) => {
         e.preventDefault();
+        setErrors({});
         const formData = new FormData();
         formData.append('report_file', file);
         formData.append('status', 'Hoàn thành');
@@ -66,9 +68,12 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
             onSuccess: () => {
                 setIsReportModalOpen(false);
                 setFile(null);
+                setErrors({});
             },
-            onError: () => {
-                alert("Lỗi khi gửi file. Có thể file quá lớn!");
+            onError: (errorsFromServer) => {
+                setUploading(false);
+                setErrors(errorsFromServer);
+                console.log("Lỗi từ server:", errorsFromServer);
             },
             onFinish: () => {
                 setUploading(false);
@@ -117,70 +122,75 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         >
             <Head title="Quản lý công việc" />
 
-            <div className="py-8 bg-gray-50 min-h-screen">
+            <div className="py-8 bg-orange-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="bg-slate-50/50 rounded-3xl shadow-sm border border-slate-200/60 p-6 mb-8 backdrop-blur-sm">
-    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 bg-white/40 p-2 rounded-2xl border border-white/60">
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-indigo-600">
-                    <i className="fa-solid fa-magnifying-glass text-slate-400"></i>
-                </div>
-                <input 
-                    type="text" 
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
-                    placeholder="Tìm theo tiêu đề..." 
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all text-sm shadow-sm"
-                />
-            </div>
+                    <div className="bg-gray-300 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-200/50 p-5 mb-10">
+                        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                            
+                            <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-slate-100/50 p-1.5 rounded-[1.5rem] border border-slate-200/40">
+                                
+                                <div className="relative flex-grow group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                                        <i className="fa-solid fa-magnifying-glass text-xs"></i>
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
+                                        placeholder="Tìm kiếm công việc..." 
+                                        className="w-full pl-10 pr-4 py-2.5 bg-white border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 text-sm placeholder:text-slate-400 shadow-sm transition-all"
+                                    />
+                                </div>
 
-            <select 
-                value={priority}
-                onChange={(e) => {
-                    setPriority(e.target.value);
-                    router.get(route('Quanlycongviec'), { search, priority: e.target.value });
-                }}
-                className="bg-white border border-slate-200 rounded-xl text-sm py-2.5 pl-4 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-sm cursor-pointer"
-            >
-                <option value="">Tất cả ưu tiên</option>
-                <option value="Cao">🔴 Cao</option>
-                <option value="Trung bình">🟡 Trung bình</option>
-                <option value="Thấp">🟢 Thấp</option>
-            </select>
-            
-            <button 
-                onClick={handleFilter}
-                className="bg-white text-indigo-600 border border-indigo-100 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-600 hover:text-white transition-all active:scale-95 shadow-sm shadow-indigo-100/50"
-            >
-                Áp dụng bộ lọc
-            </button>
-        </div>
-        
-        {/* Khu vực Action Buttons */}
-        <div className="flex items-center gap-3">
-            {selectedIds.length > 0 && (
-                <button
-                    onClick={deleteSelected}
-                    className="group bg-red-50 text-red-600 px-5 py-2.5 rounded-xl hover:bg-red-600 hover:text-white shadow-sm transition-all flex items-center gap-2 text-sm font-bold border border-red-100 animate-in fade-in slide-in-from-right-4"
-                >
-                    <i className="fa-solid fa-trash-can group-hover:animate-bounce"></i>
-                    Xóa đã chọn ({selectedIds.length})
-                </button>
-            )}
+                                <div className="relative min-w-[160px]">
+                                    <select 
+                                        value={priority}
+                                        onChange={(e) => {
+                                            setPriority(e.target.value);
+                                            router.get(route('Quanlycongviec'), { search, priority: e.target.value });
+                                        }}
+                                        className="w-full bg-white border-none rounded-2xl text-sm py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-indigo-500/20 shadow-sm appearance-none cursor-pointer text-slate-600 font-medium"
+                                    >
+                                        <option value="">Tất cả mức độ</option>
+                                        <option value="Cao">🔴 Ưu tiên Cao</option>
+                                        <option value="Trung bình">🟡 Trung bình</option>
+                                        <option value="Thấp">🟢 Ưu tiên Thấp</option>
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                        <i className="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </div>
+                                </div>
 
-            <Link 
-                href={route('task.create')} 
-                className="bg-gradient-to-r from-gray-900 to-slate-800 text-white px-6 py-2.5 rounded-xl hover:from-indigo-600 hover:to-indigo-500 shadow-lg shadow-indigo-200/40 transition-all flex items-center gap-2 text-sm font-bold whitespace-nowrap active:scale-95"
-            >
-                Tạo công việc
-            </Link>
-        </div>
-    </div>
-</div>
+                                <button 
+                                    onClick={handleFilter}
+                                    className="px-6 py-2.5 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+                                >
+                                    Lọc kết quả
+                                </button>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                {selectedIds.length > 0 && (
+                                    <button
+                                        onClick={deleteSelected}
+                                        className="group bg-white text-red-500 px-5 py-2.5 rounded-2xl hover:bg-red-50 shadow-sm transition-all flex items-center gap-2 text-sm font-semibold border border-red-100 animate-in fade-in zoom-in-95 duration-300"
+                                    >
+                                        <i className="fa-solid fa-trash-can text-xs group-hover:shake"></i>
+                                        Xóa mục đã chọn ({selectedIds.length})
+                                    </button>
+                                )}
+
+                                <Link 
+                                    href={route('task.create')} 
+                                    className="bg-slate-900 text-white px-7 py-3 rounded-2xl hover:bg-indigo-600 shadow-xl shadow-slate-200 transition-all flex items-center gap-2 text-sm font-bold active:scale-95 group"
+                                >
+                                    Tạo công việc
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-1 gap-4">
                         {tasks && tasks.length > 0 ? (
@@ -190,7 +200,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                     className={`group relative flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
                                         task.status === 'Hoàn thành' 
                                         ? 'bg-gray-50 border-gray-100 grayscale-[0.5]'
-                                        : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50/50' 
+                                        : 'bg-white border-gray-100 hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-50/50' 
                                     }`}
                                 >
                                     <div className="flex items-start gap-5">
@@ -211,7 +221,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
 
                                         <div className="space-y-1">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <h4 className={`text-base font-bold tracking-tight transition-all ${
+                                                <h4 className={`text-base font-semibold tracking-tight transition-all ${
                                                     task.status === 'Hoàn thành' ? 'text-gray-400 line-through italic' : 'text-gray-900'
                                                 }`}>
                                                     {task.title}
@@ -261,7 +271,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                                 <select 
                                                     value={task.status || 'Chưa làm'} 
                                                     onChange={(e) => updateStatus(task.id, e.target.value)}
-                                                    className="text-xs border-none bg-gray-100 hover:bg-white hover:ring-2 hover:ring-indigo-500 rounded-xl py-1.5 font-bold transition-all cursor-pointer"
+                                                    className="text-xs border-none bg-gray-100 hover:bg-white hover:ring-2 hover:ring-indigo-500 rounded-xl py-1.5 font-semibold transition-all cursor-pointer"
                                                 >
                                                     {task.status === 'Chưa làm' && (
                                                         <>
@@ -387,8 +397,11 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                             <div className="relative group">
                                 <input 
                                     type="file" 
-                                    onChange={(e) => setFile(e.target.files[0])}
-                                    required
+                                    accept="application/pdf"
+                                    onChange={(e) => {
+                                        setFile(e.target.files[0])
+                                        setErrors({});
+                                    }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div className="border-2 border-dashed border-gray-200 group-hover:border-indigo-400 group-hover:bg-indigo-50 transition-all p-10 rounded-[2rem] text-center">
@@ -399,6 +412,15 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                     <span className="text-[10px] text-red-500 mt-2 block font-semibold">ĐỊNH DẠNG: ONLY PDF</span>
                                 </div>
                             </div>
+                            
+                            {errors.report_file && (
+                                <div className="mt-2 text-center">
+                                    <span className="text-red-500 text-xs font-bold bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                                        <i className="fa-solid fa-triangle-exclamation mr-1"></i>
+                                        {errors.report_file}
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="mt-8 flex flex-col gap-3">
                                 <button 

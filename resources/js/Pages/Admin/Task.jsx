@@ -224,6 +224,11 @@ const handleReject = (e) => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm space-x-5">
+                                            <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 font-medium">
+                                                <i className="fa fa-pencil" aria-hidden="true"></i></button>
+                                            <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 font-medium">
+                                                <i className="fa fa-trash" aria-hidden="true"></i></button>
+
                                             {task.status === 'Chờ duyệt' && (
                                                 <button 
                                                     onClick={() => openReviewModal(task)} 
@@ -233,11 +238,6 @@ const handleReject = (e) => {
                                                     <i className="fa-solid fa-file-signature text-lg"></i>
                                                 </button>
                                             )}
-
-                                            <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 font-medium">
-                                                <i className="fa fa-pencil" aria-hidden="true"></i></button>
-                                            <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 font-medium">
-                                                <i className="fa fa-trash" aria-hidden="true"></i></button>
                                         </td>
                                     </tr>
                                 )) : (
