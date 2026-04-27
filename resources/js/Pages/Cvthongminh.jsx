@@ -109,7 +109,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
                         ) : (
                             <div className="text-center py-24 bg-white rounded-[3rem] border-4 border-dashed border-orange-100">
                                 <div className="text-6xl mb-6">🎯</div>
-                                <h3 className="text-xl font-black text-orange-900">Danh sách trống!</h3>
+                                <h3 className="text-xl font-semibold text-orange-900">Danh sách trống!</h3>
                                 <p className="text-slate-500 mt-2">Mọi việc đã xong, Bạn hãy nghỉ ngơi nhé!</p>
                             </div>
                         )}

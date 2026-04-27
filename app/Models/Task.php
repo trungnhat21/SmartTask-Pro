@@ -28,4 +28,9 @@ class Task extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function feedbacks()
+    {
+        // Một Task có nhiều Feedback
+        return $this->hasMany(TaskFeedback::class, 'task_id');
+    }
 }

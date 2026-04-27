@@ -3,26 +3,40 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount }) { 
+    // Tìm kiếm + độ ưu tiên
     const [search, setSearch] = useState(filters?.search || '');
     const [priority, setPriority] = useState(filters?.priority || '');
+
+    // Checkbox
     const [selectedIds, setSelectedIds] = useState([]);
 
+    // Upload file báo cáo
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedTask, setSelectedTask] = useState(null);
-
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [currentTaskId, setCurrentTaskId] = useState(null);
     const [file, setFile] = useState(null);
     const [errors, setErrors] = useState({});
 
+    // Xem chi tiết công việc
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
+
+    // Gửi báo cáo
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [currentTaskId, setCurrentTaskId] = useState(null);
+
+    // phản hồi task từ user
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [feedbackList, setFeedbackList] = useState([]);
+    const [newFeedback, setNewFeedback] = useState('');
+    const [loadingFeedback, setLoadingFeedback] = useState(false);
+
+    // Mở modal xem chi tiết công việc
     const openModal = (task) => {
         setSelectedTask(task);
         setIsModalOpen(true);
     };
 
+    // Lọc danh sách công việc
     const handleFilter = () => {
         router.get(route('Quanlycongviec'), 
             { search, priority }, 
@@ -30,12 +44,14 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         );
     };
 
+    // Xóa 1 công việc
     const deleteTask = (id) => {
         if (confirm('Bạn có chắc chắn muốn xóa công việc này không?')) {
             router.delete(route('task.destroy', id));
         }
     };
 
+    // Cập nhật trạng thái công việc
     const updateStatus = (id, newStatus) => {
         const task = tasks.find(t => t.id === id);
         
@@ -49,6 +65,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         }
     };
 
+    // Gửi báo cáo
     const handleSendReport = (e) => {
         e.preventDefault();
         setErrors({});
@@ -82,12 +99,14 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         });
     };
 
+    // Chọn / bỏ chọn checkbox
     const handleCheckboxChange = (id) => {
         setSelectedIds((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
     };
 
+    // Xóa nhiều công việc đã chọn
     const deleteSelected = () => {
         if (confirm(`Bạn có chắc muốn xóa ${selectedIds.length} công việc đã chọn?`)) {
             router.post(route('task.delete-multiple'), {
@@ -96,6 +115,33 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                 onSuccess: () => setSelectedIds([]),
             });
         }
+    };
+
+    const openFeedback = async (task) => {
+        setSelectedTask(task);
+        setIsFeedbackModalOpen(true);
+        setLoadingFeedback(true);
+        try {
+            const response = await axios.get(route('task.get-feedbacks', task.id));
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error("Lỗi lấy phản hồi:", error);
+        } finally {
+            setLoadingFeedback(false);
+        }
+    };
+
+    const sendFeedback = () => {
+        if (!newFeedback.trim()) return;
+        router.post(route('task.store-feedback', selectedTask.id), {
+            content: newFeedback,
+            type: 'feedback'
+        }, {
+            onSuccess: () => {
+                setNewFeedback('');
+                openFeedback(selectedTask);
+            }
+        });
     };
 
     return (
@@ -300,6 +346,25 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                                 </button>
                                             )}
 
+                                            {task.created_by_admin && (
+                                                <button 
+                                                    onClick={() => openFeedback(task)}
+                                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all relative"
+                                                    title="Phản hồi Admin"
+                                                >
+                                                    <i className="fa-solid fa-comments text-sm"></i>
+                                                    {task.unread_count > 0 && (
+                                                        <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                            
+                                                            <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-[10px] font-black items-center justify-center border-2 border-white shadow-sm">
+                                                                {task.unread_count > 9 ? '9+' : task.unread_count}
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            )}
+
                                             <button 
                                                 onClick={() => openModal(task)}
                                                 className="p-2 text-gray-500 hover:bg-white hover:text-indigo-600 rounded-lg transition-all"
@@ -448,6 +513,63 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {isFeedbackModalOpen && selectedTask && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+                    <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b bg-gray-50">
+                            <h3 className="text-xl font-semibold">Phản hồi công việc</h3>
+                            <div className="text-sm text-gray-500 mt-1">
+                                <p>Task: <span className="font-semibold text-gray-800">{selectedTask.title}</span></p>
+                                <p>Hạn chót: <span className="text-red-500">{selectedTask.deadline_formatted}</span></p>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+                            {loadingFeedback ? (
+                                <div className="text-center py-10">
+                                    <i className="fa-solid fa-spinner animate-spin text-indigo-500 text-2xl"></i>
+                                </div>
+                            ) : feedbackList && feedbackList.length > 0 ? (
+                                feedbackList.map((fb, idx) => (
+                                    <div key={idx} className={`flex flex-col ${fb.user_id === auth.user.id ? 'items-end' : 'items-start'}`}>
+                                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
+                                            fb.type === 'reject' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                            fb.user_id === auth.user.id ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border'
+                                        }`}>
+                                            <p className="font-semibold text-[10px] mb-1 opacity-70">
+                                                {fb.user?.name} {fb.type === 'reject' && '• ĐÃ TỪ CHỐI'}
+                                            </p>
+                                            {fb.content}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-gray-400 mt-10">Chưa có trao đổi nào</div>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t bg-white">
+                            <textarea 
+                                value={newFeedback}
+                                onChange={(e) => setNewFeedback(e.target.value)}
+                                placeholder="Viết nội dung phản hồi..."
+                                className="w-full border-gray-200 rounded-xl text-sm focus:ring-indigo-500 mb-3"
+                                rows="2"
+                            />
+                            <div className="flex gap-2">
+                                <button onClick={() => setIsFeedbackModalOpen(false)} className="flex-1 py-2 text-gray-500 font-bold">Đóng</button>
+                                <button 
+                                    onClick={sendFeedback}
+                                    className="flex-[2] py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
+                                >
+                                    Gửi phản hồi
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

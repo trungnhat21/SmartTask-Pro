@@ -41,11 +41,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tasks/delete-multiple', [TaskController::class, 'deleteMultiple'])->name('task.delete-multiple');
 
     Route::patch('/quan-ly-cong-viec/{task}/update-status', [TaskController::class, 'updateStatus'])->name('task.update-status');
+    // Phản hồi từ user và admin
+    Route::get('/tasks/{task}/feedbacks', [TaskController::class, 'getFeedbacks'])->name('task.get-feedbacks');
+    // Gửi phản hồi mới
+    Route::post('/tasks/{task}/feedbacks', [TaskController::class, 'storeFeedback'])->name('task.store-feedback');
 });
 
+// CV thông minh
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Cv-thong-minh', [CvController::class, 'index'])->name('Cvthongminh');
-
 });
 
 // Thống kê

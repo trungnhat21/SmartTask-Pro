@@ -9,6 +9,13 @@ export default function Tasks({ auth, tasks, users, filters }) {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [reviewTask, setReviewTask] = useState(null);
 
+    // Các state cho Feedback
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [feedbackList, setFeedbackList] = useState([]);
+    const [newFeedback, setNewFeedback] = useState('');
+    const [loadingFeedback, setLoadingFeedback] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
+
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const { 
         data: assignData, 
@@ -125,6 +132,48 @@ const handleReject = (e) => {
         return `${d}/${m}/${y} ${time}`;
     };
 
+    const openFeedback = async (task) => {
+        setSelectedTask(task);
+        setIsFeedbackModalOpen(true);
+        setLoadingFeedback(true);
+        try {
+            const response = await axios.get(route('task.get-feedbacks', task.id));
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error("Lỗi lấy phản hồi:", error);
+        } finally {
+            setLoadingFeedback(false);
+        }
+    };
+
+    const handleAdminReply = () => {
+        if (!newFeedback.trim()) return;
+        router.post(route('task.store-feedback', selectedTask.id), {
+            content: newFeedback,
+            type: 'reply'
+        }, {
+            onSuccess: () => {
+                setNewFeedback('');
+                openFeedback(selectedTask);
+            }
+        });
+    };
+
+    // 2. Hàm từ chối nhanh
+    const handleAdminReject = () => {
+        if (!confirm("Bạn có chắc chắn muốn từ chối phản hồi này không?")) return;
+        
+        router.post(route('task.store-feedback', selectedTask.id), {
+            content: "Phản hồi bị từ chối",
+            type: 'reject'
+        }, {
+            onSuccess: () => {
+                setNewFeedback('');
+                openFeedback(selectedTask);
+            }
+        });
+    };
+
     return (
         <AdminLayout
             auth={auth}
@@ -238,6 +287,19 @@ const handleReject = (e) => {
                                                     <i className="fa-solid fa-file-signature text-lg"></i>
                                                 </button>
                                             )}
+                                            <button 
+                                                onClick={() => openFeedback(task)}
+                                                className="text-indigo-600 hover:text-indigo-900 transition relative"
+                                                title="Phản hồi & Trao đổi"
+                                            >
+                                                <i className="fa-solid fa-comments text-lg"></i>
+
+                                                {task.unread_count > 0 && (
+                                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 bg-red-500 text-white text-[10px] rounded-full items-center justify-center border border-white font-bold">
+                                                        {task.unread_count}
+                                                    </span>
+                                                )}
+                                            </button>
                                         </td>
                                     </tr>
                                 )) : (
@@ -456,6 +518,105 @@ const handleReject = (e) => {
                                 <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition">Cập nhật</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {isFeedbackModalOpen && selectedTask && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-100">
+
+                        <div className="px-6 py-5 border-b bg-white flex justify-between items-center flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                                    <i className="fa-solid fa-comments-dot text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-semibold text-slate-800 tracking-tight">Trao đổi công việc</h3>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-indigo-400"></span>
+                                        <p className="text-sm font-medium text-slate-500 uppercase tracking-wider text-[10px]">
+                                            TASK: {selectedTask.title}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsFeedbackModalOpen(false)} 
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200"
+                            >
+                                <i className="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#f8fafc] min-h-[350px] h-[350px] scrollbar-thin scrollbar-thumb-slate-200">
+                            {loadingFeedback ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                    <i className="fa-solid fa-spinner animate-spin text-indigo-500 text-4xl"></i>
+                                    <p className="text-slate-400 text-sm font-medium">Đang tải cuộc hội thoại...</p>
+                                </div>
+                            ) : feedbackList.length > 0 ? (
+                                feedbackList.map((fb, idx) => (
+                                    <div key={idx} className={`flex ${fb.user_id === auth.user.id ? 'justify-end' : 'justify-start'} group animate-in slide-in-from-bottom-2 duration-300`}>
+                                        <div className={`flex flex-col ${fb.user_id === auth.user.id ? 'items-end' : 'items-start'} max-w-[85%]`}>
+                                            <span className="text-[11px] font-bold text-slate-400 mb-1.5 px-2 flex items-center gap-1.5">
+                                                {fb.user?.name} 
+                                                {fb.type === 'reject' && <span className="text-red-500 bg-red-50 px-1.5 py-0.5 rounded text-[9px]">● ĐÃ TỪ CHỐI</span>}
+                                            </span>
+                                            
+                                            <div className={`relative p-4 rounded-2xl text-[14px] leading-relaxed shadow-sm transition-all ${
+                                                fb.type === 'reject' 
+                                                    ? 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-100' 
+                                                    : fb.user_id === auth.user.id 
+                                                        ? 'bg-indigo-600 text-white rounded-tr-none shadow-indigo-100' 
+                                                        : 'bg-white text-slate-700 rounded-tl-none border border-slate-200 shadow-slate-50'
+                                            }`}>
+                                                {fb.content}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full opacity-40">
+                                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                        <i className="fa-solid fa-message-slash text-2xl text-slate-400"></i>
+                                    </div>
+                                    <p className="text-slate-500 font-medium italic">Chưa có trao đổi nào được ghi lại</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t bg-white shadow-[0_-10px_20px_rgba(0,0,0,0.02)] flex-shrink-0">
+                            <div className="relative group">
+                                <textarea 
+                                    value={newFeedback}
+                                    onChange={(e) => setNewFeedback(e.target.value)}
+                                    placeholder="Nhập nội dung phản hồi cho User..."
+                                    className="w-full border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 mb-4 resize-none transition-all p-4 pr-12 h-[80px] bg-slate-50 focus:bg-white"
+                                    rows="2"
+                                />
+                                <div className="absolute right-4 bottom-8 text-slate-300 group-focus-within:text-indigo-400 transition-colors">
+                                    <i className="fa-solid fa-pen-nib"></i>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button 
+                                    onClick={handleAdminReject}
+                                    className="flex-1 py-3 px-6 bg-white text-red-600 rounded-2xl font-semibold hover:bg-red-50 transition-all border-2 border-red-100 flex items-center justify-center gap-2 group active:scale-95"
+                                >
+                                    <i className="fa-solid fa-circle-xmark text-lg"></i>
+                                    Từ chối báo cáo
+                                </button>
+                                <button 
+                                    onClick={handleAdminReply}
+                                    className="flex-[2] py-3 px-6 bg-indigo-600 text-white rounded-2xl font-semibold hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-200 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                >
+                                    <i className="fa-solid fa-paper-plane text-sm"></i>
+                                    <span>Gửi phản hồi ngay</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

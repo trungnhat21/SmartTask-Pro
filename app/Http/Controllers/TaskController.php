@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\CvController;
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\TaskFeedback;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class TaskController extends Controller
@@ -10,7 +12,12 @@ class TaskController extends Controller
     // Hiển thị danh sách công việc cá nhân, tìm kiếm và định dạng ngày tháng
     public function index(Request $request)
     {
-        $query = Task::where('user_id', auth()->id());
+        $query = Task::where('user_id', auth()->id())
+        ->withCount(['feedbacks as unread_count' => function ($query) {
+            $query->where('is_read', 0)
+                  ->where('receiver_id', auth()->id())
+                  ->where('user_id', '!=', auth()->id());
+        }]);
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -199,5 +206,45 @@ class TaskController extends Controller
         Task::create($validated);
 
         return redirect()->route('Quanlycongviec');
+    }
+
+    // Hàm gửi phản hồi (Dùng chung cho cả User và Admin)
+    public function storeFeedback(Request $request, $taskId)
+    {
+        $request->validate(['content' => 'required|string']);
+        
+        $task = \App\Models\Task::findOrFail($taskId);
+        $currentUser = auth()->user();
+
+        if ($currentUser->role === 'admin') {
+            $receiverId = $task->user_id; 
+        } else {
+            $receiverId = \App\Models\User::where('role', 'admin')->value('id') ?? 1;
+        }
+
+        // 3. Lưu vào database
+        \App\Models\TaskFeedback::create([
+            'task_id'     => $taskId,
+            'user_id'     => $currentUser->id,
+            'content'     => $request->content,
+            'type'        => $request->type ?? 'feedback',
+            'is_read'     => 0,
+            'receiver_id' => $receiverId,
+        ]);
+
+        return back();
+    }
+    public function getFeedbacks($taskId)
+    {
+        \App\Models\TaskFeedback::where('task_id', $taskId)
+            ->where('receiver_id', auth()->id())
+            ->update(['is_read' => 1]);
+
+        $feedbacks = \App\Models\TaskFeedback::with('user:id,name')
+            ->where('task_id', $taskId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json($feedbacks);
     }
 }

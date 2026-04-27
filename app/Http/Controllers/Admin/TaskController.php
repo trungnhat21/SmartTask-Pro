@@ -8,13 +8,19 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use App\Models\TaskFeedback;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
     // Lấy danh sách công việc hệ thống, lọc dữ liệu và tính toán trạng thái quá hạn
     public function index(Request $request)
     {
-        $query = Task::with('user');
+        $query = Task::with('user')->withCount(['feedbacks as unread_count' => function ($q) {
+            $q->where('is_read', 0)
+              ->where('receiver_id', auth()->id())
+              ->where('user_id', '!=', auth()->id());
+        }]);;
 
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
@@ -43,8 +49,8 @@ class TaskController extends Controller
             }
             
             if ($task->report_file) {
-                // $task->report_url = asset('storage/app/public/' . $task->report_file);
-                $task->report_url = asset('storage/' . $task->report_file);
+                 $task->report_url = asset('storage/app/public/' . $task->report_file);
+                //$task->report_url = asset('storage/' . $task->report_file);
             } else {
                 $task->report_url = null;
             }
@@ -165,5 +171,31 @@ class TaskController extends Controller
         ]);
 
         return back()->with('success', 'Giao việc thành công!');
+    }
+
+    public function getFeedbacks($taskId) {
+        $feedbacks = TaskFeedback::with('user:id,name')
+            ->where('task_id', $taskId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        return response()->json($feedbacks);
+    }
+
+    public function storeFeedback(Request $request, $taskId) {
+        $request->validate([
+            'content' => 'required|string',
+            'type' => 'required|in:feedback,reply,reject'
+        ]);
+        $task = Task::findOrFail($taskId);
+        TaskFeedback::create([
+            'task_id' => $taskId,
+            'user_id' => auth()->id(),
+            'content' => $request->content,
+            'type' => $request->type ?? 'feedback',
+            'is_read' => 0,
+            'receiver_id' => $task->user_id,
+        ]);
+
+        return back()->with('message', 'Thao tác thành công');
     }
 }
