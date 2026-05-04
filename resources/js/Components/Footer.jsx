@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react'
 export default function Footer() {
     return (
         <footer className="bg-orange-300 border-t border-slate-200/60 pt-12 pb-8 mt-auto">
@@ -21,18 +22,34 @@ export default function Footer() {
                     <div>
                         <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Hệ thống</h3>
                         <ul className="space-y-2">
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Bảng điều khiển</a></li>
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Danh sách dự án</a></li>
+                            <li>
+                                <Link href={route('dashboard')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
+                                    Bảng điều khiển
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href={route('Quanlycongviec')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
+                                    Danh sách dự án
+                                </Link>
+                            </li>
                             <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Trợ lý AI</a></li>
+                            <li>
+                                <Link href={route('Cvthongminh')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
+                                    Hướng dẫn sử dụng
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
                     <div>
                         <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Thông tin</h3>
                         <ul className="space-y-2">
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Hướng dẫn sử dụng</a></li>
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Chính sách bảo mật</a></li>
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Điều khoản dịch vụ</a></li>
+                            <li><Link href={route('Chinhsach')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Chính sách bảo mật</Link></li>
+                            <li>
+                                <Link href={route('Chinhsach')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
+                                    Điều khoản dịch vụ
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 

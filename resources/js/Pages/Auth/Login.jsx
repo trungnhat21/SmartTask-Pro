@@ -30,7 +30,7 @@ export default function Login({ status, canResetPassword }) {
                         Đăng nhập ngay
                     </h2>
                     <p className="mt-3 text-sm text-slate-500 font-semibold">
-                        Chào mừng bạn quay trở lại.
+                        Chào mừng bạn quay trở lại
                     </p>
                 </header>
 
@@ -52,7 +52,7 @@ export default function Login({ status, canResetPassword }) {
                             className="block w-full bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-slate-900 rounded-xl py-3 px-4 shadow-sm transition-all outline-none"
                             autoComplete="username"
                             isFocused={true}
-                            onChange={(e) => setData('email', e.target.value)}
+                            onChange={(e) => setData('email', e.target.value.toLowerCase())}
                             placeholder="Email của bạn"
                         />
                         <InputError message={errors.email} className="mt-1.5 text-xs font-medium" />

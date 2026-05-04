@@ -30,7 +30,7 @@ export default function Register() {
                         Tạo tài khoản
                     </h2>
                     <p className="mt-3 text-sm text-slate-500 font-medium">
-                        Điền thông tin bên dưới để bắt đầu trải nghiệm.
+                        Điền thông tin bên dưới để bắt đầu trải nghiệm
                     </p>
                 </header>
 
@@ -59,7 +59,7 @@ export default function Register() {
                             value={data.email}
                             className="block w-full bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-slate-900 rounded-xl py-3 px-4 shadow-sm transition-all"
                             autoComplete="username"
-                            onChange={(e) => setData('email', e.target.value)}
+                            onChange={(e) => setData('email', e.target.value.toLowerCase())}
                             placeholder="example@gmail.com"
                         />
                         <InputError message={errors.email} className="mt-1.5 text-xs font-medium" />

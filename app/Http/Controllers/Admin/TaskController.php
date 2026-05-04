@@ -49,8 +49,8 @@ class TaskController extends Controller
             }
             
             if ($task->report_file) {
-                 $task->report_url = asset('storage/app/public/' . $task->report_file);
-                //$task->report_url = asset('storage/' . $task->report_file);
+                //$task->report_url = asset('storage/app/public/' . $task->report_file);
+                $task->report_url = asset('storage/' . $task->report_file);
             } else {
                 $task->report_url = null;
             }

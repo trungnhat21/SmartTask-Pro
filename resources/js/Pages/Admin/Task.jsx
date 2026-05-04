@@ -75,18 +75,18 @@ export default function Tasks({ auth, tasks, users, filters }) {
     };
 
     const handleApprove = (e) => {
-    if (e) e.preventDefault();
-    router.patch(route('admin.tasks.approve', reviewTask.id), {}, {
-        onSuccess: () => setIsReviewModalOpen(false)
-    });
-};
+        if (e) e.preventDefault();
+        router.patch(route('admin.tasks.approve', reviewTask.id), {}, {
+            onSuccess: () => setIsReviewModalOpen(false)
+        });
+    };
 
-const handleReject = (e) => {
-    if (e) e.preventDefault();
-    router.patch(route('admin.tasks.reject', reviewTask.id), {}, {
-        onSuccess: () => setIsReviewModalOpen(false)
-    });
-};
+    const handleReject = (e) => {
+        if (e) e.preventDefault();
+        router.patch(route('admin.tasks.reject', reviewTask.id), {}, {
+            onSuccess: () => setIsReviewModalOpen(false)
+        });
+    };
     const handleUpdate = (e) => {
         e.preventDefault();
         patch(route('admin.tasks.update', data.id), {
@@ -126,10 +126,17 @@ const handleReject = (e) => {
     const formatDeadline = (deadlineString) => {
         if (!deadlineString) return 'Chưa có';
 
-        const cleanDate = deadlineString.replace('T', ' ').substring(0, 16);
-        const [date, time] = cleanDate.split(' ');
-        const [y, m, d] = date.split('-');
-        return `${d}/${m}/${y} ${time}`;
+        const dateObj = new Date(deadlineString);
+        
+        if (isNaN(dateObj.getTime())) return 'Sai định dạng';
+
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const y = dateObj.getFullYear();
+        const hr = String(dateObj.getHours()).padStart(2, '0');
+        const min = String(dateObj.getMinutes()).padStart(2, '0');
+
+        return `${d}/${m}/${y} ${hr}:${min}`;
     };
 
     const openFeedback = async (task) => {
@@ -233,13 +240,13 @@ const handleReject = (e) => {
                         <table className="min-w-full divide-y divide-gray-200 border">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Công việc</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Người thực hiện</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Nguồn gốc</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Ưu tiên</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Deadline</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Trạng thái</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Hành động</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Công việc</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Người thực hiện</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Nguồn gốc</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Ưu tiên</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Hạn chót</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Trạng thái</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -262,49 +269,55 @@ const handleReject = (e) => {
                                         <td className="px-6 py-4 text-sm text-gray-600">
                                             {formatDeadline(task.deadline)}
                                         </td>
-                                        <td className="px-6 py-4 text-sm">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                task.status === 'Hoàn thành' ? 'bg-green-100 text-green-800' : 
-                                                task.status === 'Chờ duyệt' ? 'bg-yellow-100 text-yellow-800' :
-                                                task.status === 'Từ chối' ? 'bg-orange-100 text-orange-800' :
-                                                task.status === 'Quá hạn' ? 'bg-red-100 text-red-800' : 'bg-blue-50 text-blue-800'
+                                        <td className="px-6 py-4 text-sm min-w-[140px] whitespace-nowrap">
+                                            <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase inline-block ${
+                                                task.status === 'Hoàn thành' ? 'bg-green-100 text-green-700' : 
+                                                task.status === 'Chờ duyệt' ? 'bg-yellow-100 text-yellow-700' :
+                                                task.status === 'Từ chối' ? 'bg-orange-100 text-orange-700' :
+                                                task.status === 'Quá hạn' ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'
                                             }`}>
                                                 {task.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm space-x-5">
-                                            <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 font-medium">
-                                                <i className="fa fa-pencil" aria-hidden="true"></i></button>
-                                            <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 font-medium">
-                                                <i className="fa fa-trash" aria-hidden="true"></i></button>
 
-                                            {task.status === 'Chờ duyệt' && (
-                                                <button 
-                                                    onClick={() => openReviewModal(task)} 
-                                                    className="text-yellow-600 hover:text-yellow-900"
-                                                    title="Duyệt báo cáo"
-                                                >
-                                                    <i className="fa-solid fa-file-signature text-lg"></i>
+                                        <td className="px-6 py-4 text-sm">
+                                            <div className="flex items-center justify-start gap-x-4">
+                                                <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 transition" title="Chỉnh sửa">
+                                                    <i className="fa fa-pencil text-base"></i>
                                                 </button>
-                                            )}
-                                            <button 
-                                                onClick={() => openFeedback(task)}
-                                                className="text-indigo-600 hover:text-indigo-900 transition relative"
-                                                title="Phản hồi & Trao đổi"
-                                            >
-                                                <i className="fa-solid fa-comments text-lg"></i>
+                                                
+                                                <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 transition" title="Xóa">
+                                                    <i className="fa fa-trash text-base"></i>
+                                                </button>
 
-                                                {task.unread_count > 0 && (
-                                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 bg-red-500 text-white text-[10px] rounded-full items-center justify-center border border-white font-bold">
-                                                        {task.unread_count}
-                                                    </span>
+                                                <button 
+                                                    onClick={() => openFeedback(task)}
+                                                    className="text-indigo-600 hover:text-indigo-900 transition relative"
+                                                    title="Phản hồi & Trao đổi"
+                                                >
+                                                    <i className="fa-solid fa-comments text-lg"></i>
+                                                    {task.unread_count > 0 && (
+                                                        <span className="absolute -top-2 -right-2 flex h-4 w-4 bg-red-500 text-white text-[9px] rounded-full items-center justify-center border border-white font-bold">
+                                                            {task.unread_count}
+                                                        </span>
+                                                    )}
+                                                </button>
+
+                                                {task.status === 'Chờ duyệt' && (
+                                                    <button 
+                                                        onClick={() => openReviewModal(task)} 
+                                                        className="text-yellow-600 hover:text-yellow-900 transition"
+                                                        title="Duyệt báo cáo"
+                                                    >
+                                                        <i className="fa-solid fa-file-signature text-lg"></i>
+                                                    </button>
                                                 )}
-                                            </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-10 text-center text-gray-500 italic">Không có công việc nào phù hợp.</td>
+                                        <td colSpan="7" className="px-6 py-10 text-center text-gray-500 italic">Không có công việc nào phù hợp</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -341,14 +354,14 @@ const handleReject = (e) => {
                                     return (
                                         <div className="flex flex-col items-center justify-center h-full p-20 text-gray-500">
                                             <i className="fa-regular fa-file-zipper text-6xl mb-4"></i>
-                                            <p>Định dạng này không hỗ trợ xem trực tiếp.</p>
+                                            <p>Định dạng này không hỗ trợ xem trực tiếp</p>
                                             <a href={fileUrl} download className="mt-4 px-4 py-2 bg-blue-600 text-white rounded shadow">Tải về máy</a>
                                         </div>
                                     );
                                 })()
                             ) : (
                                 <div className="flex items-center justify-center h-full text-gray-500">
-                                    Không có file đính kèm.
+                                    Không có file đính kèm
                                 </div>
                             )}
                         </div>
@@ -451,7 +464,7 @@ const handleReject = (e) => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border-t-4 border-blue-500">
-                        <h3 className="text-lg font-bold mb-4 text-gray-800">Chỉnh sửa công việc</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Chỉnh sửa công việc</h3>
                         <form onSubmit={handleUpdate} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Tên công việc</label>

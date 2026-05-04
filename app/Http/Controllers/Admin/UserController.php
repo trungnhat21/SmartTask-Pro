@@ -35,22 +35,31 @@ class UserController extends Controller
             'filters' => $request->only(['search', 'role']) 
         ]);
     }
-    // Cập nhật vai trò cho người dùng
+    // Cập nhật vai trò cho người dùng khóa tài khoản
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'role' => 'required|in:admin,user,manager',
+            'role' => 'sometimes|in:admin,user,manager',
+            'status' => 'sometimes|string|in:active,blocked',
         ]);
 
-        if ($user->id === Auth::id() && $request->role !== 'admin') {
-            return redirect()->back()->with('error', 'Bạn không thể tự hạ cấp vai trò của chính mình!');
+        if ($request->has('role')) {
+            if ($user->id === Auth::id() && $request->role !== 'admin') {
+                return redirect()->back()->with('error', 'Bạn không thể tự hạ cấp vai trò của chính mình!');
+            }
+            $user->role = $request->role;
         }
 
-        $user->update([
-            'role' => $request->role,
-        ]);
+        if ($request->has('status')) {
+            if ($user->id === Auth::id() && $request->status === 'blocked') {
+                return redirect()->back()->with('error', 'Bạn không thể tự khóa chính mình!');
+            }
+            $user->status = $request->status;
+        }
 
-        return redirect()->back()->with('message', 'Cập nhật người dùng ' . $user->name . ' thành công');
+        $user->save();
+
+        return redirect()->back()->with('message', 'Cập nhật thành công');
     }
 
     // Xóa người dùng khỏi hệ thống

@@ -1,0 +1,193 @@
+import AdminLayout from '@/Layouts/AdminLayout';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
+
+export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTasks, completedTasks, allUsers, filters }) {
+
+    const [searchQuery, setSearchQuery] = useState(filters?.search || '');
+    const [statusFilter, setStatusFilter] = useState(filters?.status || '');
+    const [userFilter, setUserFilter] = useState(filters?.user_id || '');
+
+    const handleFilter = () => {
+        router.get(route('admin.adminDashboard.index'), {
+            search: searchQuery,
+            status: statusFilter,
+            user_id: userFilter
+        }, { preserveState: true,
+             replace: true,
+             onSuccess: ()  => {
+                setSearchQuery('');
+             }
+         });
+    };
+
+    return (
+        <AdminLayout
+            header={<h2 className="font-semibold text-xl text-slate-800 leading-tight">Bảng điều khiển hệ thống</h2>}
+        >
+            <Head title="Admin Dashboard" />
+
+            <div className="py-12 bg-slate-200 border rounded-xl">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                <i className="fa-solid fa-users text-xl"></i>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Tổng User</p>
+                                <h3 className="text-2xl font-bold text-slate-900">{totalUsers || 0}</h3>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                                <i className="fa-solid fa-list-check text-xl"></i>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Đang thực hiện</p>
+                                <h3 className="text-2xl font-bold text-slate-900">{totalTasks || 0}</h3>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+                                <i className="fa-solid fa-circle-check text-xl"></i>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Đã hoàn thành</p>
+                                <h3 className="text-2xl font-bold text-slate-900">{completedTasks || 0}</h3>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
+                                <i className="fa-solid fa-triangle-exclamation text-xl"></i>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Quá hạn</p>
+                                <h3 className="text-2xl font-bold text-slate-900">{overdueTasks?.length || 0}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-wrap gap-4 items-end">
+                        <div className="flex-1 min-w-[200px]">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Tìm tên công việc</label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <i className="fa-solid fa-magnifying-glass text-sm"></i>
+                                </span>
+                                <input 
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Nhập tên công việc..."
+                                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-48">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Người phụ trách</label>
+                            <select 
+                                value={userFilter}
+                                onChange={(e) => setUserFilter(e.target.value)}
+                                className="w-full py-2 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            >
+                                <option value="">Tất cả User</option>
+                                {allUsers?.map(user => (
+                                    <option key={user.id} value={user.id}>{user.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="w-full md:w-48">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Trạng thái</label>
+                            <select 
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full py-2 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            >
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Chưa làm">Chưa làm</option>
+                                <option value="Đang làm">Đang làm</option>
+                                <option value="Chờ duyệt">Chờ duyệt</option>
+                                <option value="Quá hạn">Quá hạn</option>
+                                <option value="Hoàn thành">Hoàn thành</option>
+                            </select>
+                        </div>
+
+                        <button 
+                            onClick={handleFilter}
+                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
+                        >
+                            <i className="fa-solid fa-filter"></i> Lọc kết quả
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-900">Danh sách công việc chi tiết</h3>
+                            </div>
+                            <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-full uppercase">Hệ thống</span>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50 text-slate-600 text-sm uppercase font-semibold">
+                                    <tr>
+                                        <th className="px-6 py-4">Tên công việc</th>
+                                        <th className="px-6 py-4">Người phụ trách</th>
+                                        <th className="px-6 py-4">Hạn chót</th>
+                                        <th className="px-6 py-4">Mức độ</th>
+                                        <th className="px-6 py-4 text-center">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {overdueTasks && overdueTasks.length > 0 ? overdueTasks.map((task) => (
+                                        <tr key={task.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="font-semibold text-slate-800">{task.title}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-600">{task.user?.name || 'Chưa rõ'}</td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-red-600 font-medium">
+                                                    {new Date(task.deadline).toLocaleDateString('vi-VN')}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="px-2 py-1 bg-orange-100 text-orange-600 text-[10px] font-bold rounded uppercase">
+                                                    {task.priority || 'Cao'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase inline-block ${
+                                                    task.status === 'Hoàn thành' ? 'bg-green-100 text-green-700' : 
+                                                    task.status === 'Chờ duyệt' ? 'bg-yellow-100 text-yellow-700' :
+                                                    task.status === 'Đang làm' ? 'bg-blue-100 text-blue-700' :
+                                                    task.status === 'Quá hạn' ? 'bg-red-100 text-red-700' : 
+                                                    'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                    {task.status || 'Chưa làm'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-12 text-center text-slate-400">
+                                                <i className="fa-solid fa-magnifying-glass text-3xl mb-3 block"></i>
+                                                Không tìm thấy công việc nào phù hợp
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AdminLayout>
+    );
+}

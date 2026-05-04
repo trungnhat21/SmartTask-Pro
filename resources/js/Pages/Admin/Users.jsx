@@ -25,6 +25,14 @@ export default function Users({ auth, users, filters = {} }) {
         });
     };
 
+    const handleStatusChange = (id, status) => {
+        router.patch(route('admin.users.update', id), { status }, {
+            preserveScroll: true,
+            onSuccess: () => {
+            }
+        });
+    };
+
     const handleDelete = (id) => {
         if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
             router.delete(route('admin.users.destroy', id));
@@ -98,11 +106,12 @@ export default function Users({ auth, users, filters = {} }) {
                         <table className="min-w-full divide-y divide-gray-200 border">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tên</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Vai trò</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Hành động</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Chi tiết công việc</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tên</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Vai trò</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Chi tiết</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng thái</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -114,7 +123,7 @@ export default function Users({ auth, users, filters = {} }) {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <select 
                                                     value={user.role || 'user'} 
-                                                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                    onChange={(e) => handleRoleChange(user.id, e.target.value, user.status)}
                                                     disabled={auth.user.id === user.id}
                                                     className="border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                                 >
@@ -123,6 +132,30 @@ export default function Users({ auth, users, filters = {} }) {
                                                     <option value="admin">Admin</option>
                                                 </select>
                                             </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <Link
+                                                    href={route('admin.tasks.index', { user_id: user.id })}
+                                                    className="inline-flex items-center px-3 py-1 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 transition"
+                                                >
+                                                    Xem
+                                                </Link>
+                                            </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <select 
+                                                    value={user.status || 'active'} 
+                                                    onChange={(e) => handleStatusChange(user.id, e.target.value, user.role)}
+                                                    disabled={auth.user.id === user.id}
+                                                    className={`border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500 font-medium ${
+                                                        user.status === 'blocked' ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'
+                                                    }`}
+                                                >
+                                                    <option value="active" className="text-green-600">Hoạt động</option>
+                                                    <option value="blocked" className="text-red-600">Bị khóa</option>
+                                                </select>
+                                            </td>
+
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 {auth.user.id !== user.id ? (
                                                     <button 
@@ -135,20 +168,12 @@ export default function Users({ auth, users, filters = {} }) {
                                                     <span className="text-gray-400 italic text-xs underline">Đang đăng nhập</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <Link
-                                                    href={route('admin.tasks.index', { user_id: user.id })}
-                                                    className="inline-flex items-center px-3 py-1 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 transition"
-                                                >
-                                                    Xem
-                                                </Link>
-                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
                                         <td colSpan="4" className="px-6 py-10 text-center text-gray-500">
-                                            Không tìm thấy người dùng nào khớp với điều kiện lọc.
+                                            Không tìm thấy người dùng nào khớp với điều kiện lọc
                                         </td>
                                     </tr>
                                 )}

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\ThongkeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -80,9 +81,11 @@ Route::post('/support-store', [SupportController::class, 'store'])->name('suppor
 Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/', function () {
-        return redirect()->route('admin.users.index');
+        return redirect()->route('admin.adminDashboard.index');
     });
-    
+
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('adminDashboard.index');
+
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');

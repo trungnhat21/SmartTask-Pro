@@ -27,6 +27,18 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Kiểm tra nếu trạng thái là blocked
+        if ($request->user()->status === 'blocked') {
+            Auth::guard('web')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
