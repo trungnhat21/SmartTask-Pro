@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount }) { 
     // Tìm kiếm + độ ưu tiên
@@ -29,6 +30,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     const [feedbackList, setFeedbackList] = useState([]);
     const [newFeedback, setNewFeedback] = useState('');
     const [loadingFeedback, setLoadingFeedback] = useState(false);
+    const scrollRef = useRef(null);
 
     // Mở modal xem chi tiết công việc
     const openModal = (task) => {
@@ -131,18 +133,42 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         }
     };
 
+    const fetchLatestFeedback = async () => {
+        try {
+            const response = await axios.get(route('task.get-feedbacks', selectedTask.id));
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error("Lỗi cập nhật tin nhắn:", error);
+        }
+    };
+
     const sendFeedback = () => {
         if (!newFeedback.trim()) return;
         router.post(route('task.store-feedback', selectedTask.id), {
             content: newFeedback,
             type: 'feedback'
         }, {
+            preserveScroll: true,
             onSuccess: () => {
                 setNewFeedback('');
-                openFeedback(selectedTask);
+                fetchLatestFeedback();
             }
         });
     };
+
+    const scrollToBottom = () => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Tự động cuộn khi có tin nhắn mới
+    useEffect(() => {
+        scrollToBottom();
+    }, [feedbackList]);
 
     return (
         <AuthenticatedLayout
@@ -528,7 +554,9 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+                        <div
+                         ref={scrollRef}
+                         className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
                             {loadingFeedback ? (
                                 <div className="text-center py-10">
                                     <i className="fa-solid fa-spinner animate-spin text-indigo-500 text-2xl"></i>

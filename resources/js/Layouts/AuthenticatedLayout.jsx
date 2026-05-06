@@ -126,9 +126,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <Dropdown.Link href={route('profile.edit')} className="flex items-center gap-2">
                                                 <i className="fa-regular fa-user text-slate-400"></i> Hồ sơ
                                             </Dropdown.Link>
-                                            {user.role === 'admin' && (
-                                                <Dropdown.Link href={route('admin.users.index')} className="flex items-center gap-2 text-indigo-600 font-semibold">
-                                                    <i className="fa-solid fa-shield-halved"></i> Khu vực Admin
+                                            {(user.role === 'admin' || user.role === 'manager' || user.role === 'approve') && (
+                                                <Dropdown.Link 
+                                                    href={route('admin.users.index')} 
+                                                    className="flex items-center gap-2 text-indigo-600 font-semibold"
+                                                >
+                                                    <i className="fa-solid fa-shield-halved"></i>
+                                                    {user.role === 'admin' && 'Khu vực Admin'}
+                                                    {user.role === 'manager' && 'Manager'}
+                                                    {user.role === 'approve' && 'Approve'}
                                                 </Dropdown.Link>
                                             )}
                                         </div>
@@ -168,7 +174,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                {/* Mobile Navigation Dropdown */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-b border-slate-200 shadow-xl'}>
                     <div className="space-y-1 pb-3 pt-2 px-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>

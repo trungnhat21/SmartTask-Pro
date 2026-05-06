@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function Tasks({ auth, tasks, users, filters }) {
     const [priority, setPriority] = useState(filters.priority || '');
@@ -15,6 +16,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
     const [newFeedback, setNewFeedback] = useState('');
     const [loadingFeedback, setLoadingFeedback] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const scrollRef = useRef(null);
 
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const { 
@@ -159,11 +161,21 @@ export default function Tasks({ auth, tasks, users, filters }) {
             content: newFeedback,
             type: 'reply'
         }, {
+            preserveScroll: true,
             onSuccess: () => {
                 setNewFeedback('');
-                openFeedback(selectedTask);
+                fetchLatestFeedback();
             }
         });
+    };
+
+    const fetchLatestFeedback = async () => {
+        try {
+            const response = await axios.get(route('task.get-feedbacks', selectedTask.id));
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error("Lỗi cập nhật tin nhắn:", error);
+        }
     };
 
     // 2. Hàm từ chối nhanh
@@ -181,6 +193,21 @@ export default function Tasks({ auth, tasks, users, filters }) {
         });
     };
 
+    // Cuộn xuống cuối
+    const scrollToBottom = () => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Tự động cuộn khi danh sách phản hồi thay đổi
+    useEffect(() => {
+        scrollToBottom();
+    }, [feedbackList]);
+    
     return (
         <AdminLayout
             auth={auth}
@@ -224,16 +251,20 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
                         <button onClick={handleFilter} className="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 transition">Lọc</button>
                         
-                        <button 
-                            onClick={() => setIsAssignModalOpen(true)} 
-                            className="bg-green-600 text-white px-4 py-1.5 rounded-md hover:bg-green-700 font-bold shadow-sm transition"
-                        >
-                            Giao việc mới
-                        </button>
+                        {(auth.user.role === 'admin' || auth.user.role === 'manager') && (
+                            <>
+                                <button 
+                                    onClick={() => setIsAssignModalOpen(true)} 
+                                    className="bg-green-600 text-white px-4 py-1.5 rounded-md hover:bg-green-700 font-bold shadow-sm transition"
+                                >
+                                    Giao việc mới
+                                </button>
 
-                        <button onClick={handleDeleteAll} className="ml-auto bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700 font-medium transition">
-                            Xóa danh sách này
-                        </button>
+                                <button onClick={handleDeleteAll} className="ml-auto bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700 font-medium transition">
+                                    Xóa danh sách này
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -282,14 +313,17 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
                                         <td className="px-6 py-4 text-sm">
                                             <div className="flex items-center justify-start gap-x-4">
-                                                <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 transition" title="Chỉnh sửa">
-                                                    <i className="fa fa-pencil text-base"></i>
-                                                </button>
-                                                
-                                                <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 transition" title="Xóa">
-                                                    <i className="fa fa-trash text-base"></i>
-                                                </button>
-
+                                                {(auth.user.role === 'admin' || auth.user.role === 'manager') && (
+                                                    <>
+                                                        <button onClick={() => openEditModal(task)} className="text-blue-600 hover:text-blue-900 transition" title="Chỉnh sửa">
+                                                            <i className="fa fa-pencil text-base"></i>
+                                                        </button>
+                                                        
+                                                        <button onClick={() => handleDelete(task.id)} className="text-red-600 hover:text-red-900 transition" title="Xóa">
+                                                            <i className="fa fa-trash text-base"></i>
+                                                        </button>
+                                                    </>
+                                                )}
                                                 <button 
                                                     onClick={() => openFeedback(task)}
                                                     className="text-indigo-600 hover:text-indigo-900 transition relative"
@@ -562,7 +596,9 @@ export default function Tasks({ auth, tasks, users, filters }) {
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#f8fafc] min-h-[350px] h-[350px] scrollbar-thin scrollbar-thumb-slate-200">
+                        <div
+                         ref={scrollRef}
+                         className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#f8fafc] min-h-[350px] h-[350px] scrollbar-thin scrollbar-thumb-slate-200">
                             {loadingFeedback ? (
                                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                                     <i className="fa-solid fa-spinner animate-spin text-indigo-500 text-4xl"></i>

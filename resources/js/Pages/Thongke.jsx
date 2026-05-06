@@ -16,7 +16,6 @@ export default function Thongke({ auth, stats, weeklyData }) {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 className="font-semibold text-3xl text-slate-800 tracking-tight">Báo Cáo Thống Kê</h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1">Theo dõi và phân tích hiệu suất làm việc hệ thống</p>
                     </div>
                     <div className="shrink-0">
                         <a 

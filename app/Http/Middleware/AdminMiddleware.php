@@ -10,16 +10,15 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Kiểm tra nếu chưa đăng nhập thì bắt đăng nhập
         if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        //Nếu đã đăng nhập nhưng role KHÔNG PHẢI là admin
-        if (auth()->check() && auth()->user()->role !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Bạn không có quyền truy cập!');
-    }
-    
+        $userRole = auth()->user()->role;
+        if ($userRole !== 'admin' && $userRole !== 'manager' && $userRole !== 'approve') {
+            return redirect()->route('dashboard')->with('error', 'Bạn không có quyền truy cập!');
+        }
+        
         return $next($request);
     }
 }

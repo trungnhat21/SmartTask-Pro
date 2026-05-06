@@ -34,7 +34,6 @@ export default function Chinhsach({ auth }) {
             header={
                 <div className="flex flex-col">
                     <h2 className="font-semibold text-3xl text-slate-800 tracking-tight">Chính sách hệ thống</h2>
-                    <p className="text-slate-500 text-sm font-medium mt-1">Cơ sở pháp lý và cam kết bảo mật dữ liệu</p>
                 </div>
             }
         >
@@ -105,7 +104,7 @@ export default function Chinhsach({ auth }) {
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                             <div>
                                 <h4 className="text-3xl font-semibold text-white mb-3">Bạn cần sự trợ giúp?</h4>
-                                <p className="text-indigo-200/80 font-medium italic">Đội ngũ kỹ thuật luôn sẵn sàng giải đáp mọi thắc mắc của bạn 24/7.</p>
+                                <p className="text-indigo-200/80 font-medium italic">Đội ngũ kỹ thuật luôn sẵn sàng giải đáp mọi thắc mắc của bạn 24/7</p>
                             </div>
                             <button 
                                 onClick={() => setShowModal(true)}

@@ -142,7 +142,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                 ></div>
                             </div>
 
-                            <h3 className="font-semibold text-slate-800 text-lg mb-8 self-start">Hiệu suất tuần</h3>
+                            <h3 className="font-semibold text-slate-800 text-lg mb-8 self-start">Hiệu suất công việc</h3>
                             
                             <div className="relative group">
                                 <div 

@@ -73,7 +73,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
 
                     <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-wrap gap-4 items-end">
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Tìm tên công việc</label>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 ml-1">Tìm công việc</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                                     <i className="fa-solid fa-magnifying-glass text-sm"></i>
@@ -89,7 +89,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                         </div>
 
                         <div className="w-full md:w-48">
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Người phụ trách</label>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 ml-1">Người phụ trách</label>
                             <select 
                                 value={userFilter}
                                 onChange={(e) => setUserFilter(e.target.value)}
@@ -103,7 +103,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                         </div>
 
                         <div className="w-full md:w-48">
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Trạng thái</label>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 ml-1">Trạng thái</label>
                             <select 
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}

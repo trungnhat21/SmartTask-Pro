@@ -68,25 +68,37 @@ class TaskController extends Controller
     // Xóa tất cả công việc của một người dùng cụ thể
     public function destroyAll(Request $request)
     {
+        if (auth()->user()->role === 'approve') {
+            return back()->with('error', 'Bạn không có quyền xóa danh sách công việc');
+        }
+        
         $query = Task::query();
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
         $query->delete();
 
-        return back()->with('success', 'Đã xóa danh sách công việc.');
+        return back()->with('success', 'Đã xóa danh sách công việc');
     }
 
     // Xóa một công việc bất kỳ theo ID
     public function destroy(Task $task)
     {
+        if (auth()->user()->role === 'approve') {
+            return back()->with('error', 'Bạn không có quyền xóa công việc');
+        }
+
         $task->delete();
-        return back()->with('success', 'Đã xóa công việc thành công.');
+        return back()->with('success', 'Đã xóa công việc thành công');
     }
 
     // Cập nhật thông tin chi tiết và thời hạn của công việc
     public function update(Request $request, Task $task)
     {
+        if (auth()->user()->role === 'approve') {
+            return back()->with('error', 'Bạn không có quyền chỉnh sửa thông tin công việc');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|string',
@@ -138,6 +150,10 @@ class TaskController extends Controller
     // Khởi tạo công việc mới và trực tiếp giao cho một người dùng trong hệ thống
     public function store(Request $request)
     {
+        if (auth()->user()->role === 'approve') {
+            return back()->with('error', 'Bạn không có quyền giao việc mới');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id',
