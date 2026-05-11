@@ -146,7 +146,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {overdueTasks && overdueTasks.length > 0 ? overdueTasks.map((task) => (
+                                    {overdueTasks.data && overdueTasks.data.length > 0 ? overdueTasks.data.map((task) => (
                                         <tr key={task.id} className="hover:bg-slate-50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="font-semibold text-slate-800">{task.title}</div>
@@ -184,6 +184,47 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                        {/*Phân trang*/}
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex gap-1">
+                                {overdueTasks.links.map((link, index) => {
+                                    // Kiểm tra nếu là dấu ba chấm
+                                    const isDots = link.label === "...";
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            disabled={!link.url || isDots} 
+                                            onClick={() => {
+                                                if (!isDots) {
+                                                    router.get(link.url, {
+                                                        search: searchQuery,
+                                                        status: statusFilter,
+                                                        user_id: userFilter
+                                                    }, { preserveState: true });
+                                                }
+                                            }}
+                                            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+                                                link.active 
+                                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' 
+                                                    : isDots
+                                                        ? 'bg-transparent text-slate-400 border-none cursor-default'
+                                                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                            } ${(!link.url && !isDots) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                            dangerouslySetInnerHTML={{ 
+                                                __html: link.label
+                                                    .replace('&laquo; Previous', 'Trước')
+                                                    .replace('Next &raquo;', 'Sau') 
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                            
+                            <div className="text-xs text-slate-500 font-medium">
+                                Hiển thị {overdueTasks.from} - {overdueTasks.to} trong tổng số {overdueTasks.total}
+                            </div>
                         </div>
                     </div>
                 </div>

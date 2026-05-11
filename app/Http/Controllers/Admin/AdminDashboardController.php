@@ -32,7 +32,10 @@ class AdminDashboardController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $overdueTasks = $query->orderBy('deadline', 'asc')->get();
+        $overdueTasks = $query->orderBy('deadline', 'asc')
+                              ->paginate(10)
+                              ->onEachSide(1)
+                              ->withQueryString();
 
         $allUsers = User::select('id', 'name')->orderBy('name')->get();
 

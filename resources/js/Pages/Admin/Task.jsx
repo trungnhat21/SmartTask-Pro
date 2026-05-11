@@ -211,11 +211,11 @@ export default function Tasks({ auth, tasks, users, filters }) {
     return (
         <AdminLayout
             auth={auth}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Quản lý công việc hệ thống</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Quản lý công việc</h2>}
         >
             <Head title="Quản lý công việc" />
 
-            <div className="py-12">
+            <div className="py-12 bg-slate-200 border rounded-xl">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     
                     <div className="bg-white p-4 mb-4 rounded-lg shadow flex flex-wrap items-center gap-4 text-sm">
@@ -281,7 +281,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {tasks.length > 0 ? tasks.map((task) => (
+                                {tasks.data && tasks.data.length > 0 ? tasks.data.map((task) => (
                                     <tr key={task.id} className="hover:bg-gray-50 transition">
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{task.title}</td>
                                         <td className="px-6 py-4 text-sm text-gray-600">{task.user ? task.user.name : 'Chưa gán'}</td>
@@ -356,6 +356,46 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                 )}
                             </tbody>
                         </table>
+                        
+                        {/*Phân trang*/}
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex gap-1">
+                                {tasks.links.map((link, index) => {
+                                    const isDots = link.label === "...";
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            disabled={!link.url || isDots}
+                                            onClick={() => {
+                                                if (!isDots && link.url) {
+                                                    router.get(link.url, { 
+                                                        priority, 
+                                                        status, 
+                                                        user_id: filters.user_id 
+                                                    }, { preserveState: true });
+                                                }
+                                            }}
+                                            className={`px-3 py-1 text-[11px] font-semibold rounded-lg border transition-all ${
+                                                link.active 
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-100' 
+                                                    : isDots
+                                                        ? 'bg-transparent text-slate-400 border-none cursor-default'
+                                                        : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'
+                                            } ${(!link.url && !isDots) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                            dangerouslySetInnerHTML={{ 
+                                                __html: link.label
+                                                    .replace('&laquo; Previous', 'Trước')
+                                                    .replace('Next &raquo;', 'Sau') 
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                            <div className="text-sm text-slate-600 font-medium">
+                                Hiển thị <span className="text-indigo-600">{tasks.from || 0}</span> - <span className="text-indigo-600">{tasks.to || 0}</span> trên tổng số <span className="text-indigo-600">{tasks.total}</span> công việc
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -419,152 +459,257 @@ export default function Tasks({ auth, tasks, users, filters }) {
             )}
 
             {isAssignModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border-t-4 border-green-500">
-                        <h3 className="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-                            🚀 Giao công việc mới
-                        </h3>
-                        <form onSubmit={handleAssignTask} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700">Tên công việc</label>
-                                <input 
-                                    type="text" 
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                    value={assignData.title}
-                                    onChange={e => setAssignData('title', e.target.value)}
-                                    placeholder="Nhập tên công việc..."
-                                />
-                                {assignErrors.title && <div className="text-red-500 text-xs mt-1">{assignErrors.title}</div>}
+                <div className="fixed inset-0 z-[100] overflow-y-auto">
+                    <div 
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+                        onClick={() => setIsAssignModalOpen(false)}
+                    ></div>
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden transform transition-all">
+                            
+                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-5">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                        <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                            </svg>
+                                        </div>
+                                        Giao công việc mới
+                                    </h3>
+                                    <button 
+                                        onClick={() => setIsAssignModalOpen(false)}
+                                        className="text-white/80 hover:text-white transition-colors"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700">Người thực hiện</label>
-                                <select 
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                    value={assignData.user_id}
-                                    onChange={e => setAssignData('user_id', e.target.value)}
-                                    required
-                                >
-                                    <option value="">-- Chọn người thực hiện --</option>
-                                    {users.map(u => (
-                                        <option key={u.id} value={u.id}>{u.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700">Mô tả</label>
-                                <textarea 
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                    value={assignData.description}
-                                    onChange={e => setAssignData('description', e.target.value)}
-                                    placeholder="Nhập mô tả chi tiết..."
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <form onSubmit={handleAssignTask} className="p-7 space-y-5">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700">Độ ưu tiên</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Tên công việc</label>
+                                    <input 
+                                        type="text" 
+                                        className={`w-full px-4 py-2.5 rounded-2xl border ${assignErrors.title ? 'border-red-300 bg-red-50' : 'border-slate-200'} focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-slate-600 placeholder:text-slate-400`}
+                                        value={assignData.title}
+                                        onChange={e => setAssignData('title', e.target.value)}
+                                        placeholder="Nhập tên công việc"
+                                    />
+                                    {assignErrors.title && <div className="text-red-500 text-xs font-semibold mt-1.5 ml-1 flex items-center gap-1">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" /></svg>
+                                        {assignErrors.title}
+                                    </div>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Người thực hiện</label>
                                     <select 
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                        value={assignData.priority}
-                                        onChange={e => setAssignData('priority', e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-slate-600 bg-white cursor-pointer"
+                                        value={assignData.user_id}
+                                        onChange={e => setAssignData('user_id', e.target.value)}
+                                        required
                                     >
-                                        <option value="Thấp">Thấp</option>
-                                        <option value="Trung bình">Trung bình</option>
-                                        <option value="Cao">Cao</option>
+                                        <option value="">-- Chọn thành viên phụ trách --</option>
+                                        {users.map(u => (
+                                            <option key={u.id} value={u.id}>{u.name}</option>
+                                        ))}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700">Hạn chót</label>
-                                    <input 
-                                        type="datetime-local"
-                                        step="60"
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                        value={assignData.deadline}
-                                        onChange={e => setAssignData('deadline', e.target.value)}
-                                    />
-                                    {assignErrors.deadline && <div className="text-red-500 text-xs mt-1">{assignErrors.deadline}</div>}
-                                </div>
-                            </div>
 
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={() => setIsAssignModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition">Hủy</button>
-                                <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-green-600 rounded-md hover:bg-green-700 transition">Giao việc ngay</button>
-                            </div>
-                        </form>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Mô tả chi tiết</label>
+                                    <textarea 
+                                        rows="5"
+                                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-slate-600 placeholder:text-slate-400 resize-none"
+                                        value={assignData.description}
+                                        onChange={e => setAssignData('description', e.target.value)}
+                                        placeholder="Có thể mô tả cụ thể công việc"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Độ ưu tiên</label>
+                                        <div className="relative">
+                                            <select 
+                                                className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 appearance-none transition-all outline-none text-slate-600 bg-white"
+                                                value={assignData.priority}
+                                                onChange={e => setAssignData('priority', e.target.value)}
+                                            >
+                                                <option value="Thấp">🟢 Thấp</option>
+                                                <option value="Trung bình">🟡 Trung bình</option>
+                                                <option value="Cao">🔴 Cao</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Hạn chót</label>
+                                        <input 
+                                            type="datetime-local"
+                                            step="60"
+                                            className={`w-full px-4 py-2.5 rounded-2xl border ${assignErrors.deadline ? 'border-red-300 bg-red-50' : 'border-slate-200'} focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-slate-600`}
+                                            value={assignData.deadline}
+                                            onChange={e => setAssignData('deadline', e.target.value)}
+                                        />
+                                        {assignErrors.deadline && <div className="text-red-500 text-[10px] font-semibold mt-1.5 ml-1 leading-tight">{assignErrors.deadline}</div>}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 pt-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsAssignModalOpen(false)} 
+                                        className="flex-1 px-6 py-3 text-sm font-bold text-slate-500 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-all active:scale-95"
+                                    >
+                                        Đóng
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-[2] px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <span>Giao việc ngay</span>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md border-t-4 border-blue-500">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Chỉnh sửa công việc</h3>
-                        <form onSubmit={handleUpdate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Tên công việc</label>
-                                <input 
-                                    type="text" 
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.title}
-                                    onChange={e => setData('title', e.target.value)}
-                                />
-                                {editErrors.title && <div className="text-red-500 text-xs mt-1">{editErrors.title}</div>}
-                            </div>
+                <div className="fixed inset-0 z-[100] overflow-y-auto">
+                    <div 
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+                        onClick={() => setIsModalOpen(false)}
+                    ></div>
+
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden transform transition-all">
                             
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Độ ưu tiên</label>
-                                    <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value={data.priority} onChange={e => setData('priority', e.target.value)}>
-                                        <option value="Thấp">Thấp</option>
-                                        <option value="Trung bình">Trung bình</option>
-                                        <option value="Cao">Cao</option>
-                                    </select>
+                            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-10 py-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-2xl font-semibold text-white flex items-center gap-4">
+                                        <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </div>
+                                        Chỉnh sửa công việc
+                                    </h3>
+                                    <button 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="text-white/80 hover:text-white bg-white/10 p-2 rounded-full transition-all"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
+                            </div>
+
+                            <form onSubmit={handleUpdate} className="p-4 space-y-7">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Trạng thái</label>
-                                    <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value={data.status} onChange={e => setData('status', e.target.value)}>
-                                        <option value="Chưa làm">Chưa làm</option>
-                                        <option value="Đang làm">Đang làm</option>
-                                        <option value="Chờ duyệt">Chờ duyệt</option>
-                                        <option value="Hoàn thành">Hoàn thành</option>
-                                        <option value="Quá hạn">Quá hạn</option>
-                                        <option value="Từ chối">Từ chối</option>
-                                    </select>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Tên công việc</label>
+                                    <input 
+                                        type="text" 
+                                        className={`w-full px-5 py-3.5 rounded-2xl border ${editErrors.title ? 'border-red-300 bg-red-50' : 'border-slate-200'} focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 font-medium`}
+                                        value={data.title}
+                                        onChange={e => setData('title', e.target.value)}
+                                    />
+                                    {editErrors.title && <div className="text-red-500 text-xs font-semibold mt-2 ml-1 italic">{editErrors.title}</div>}
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Người thực hiện</label>
-                                <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value={data.user_id} onChange={e => setData('user_id', e.target.value)}>
-                                    <option value="">Chọn người thực hiện</option>
-                                    {users.map(u => (
-                                        <option key={u.id} value={u.id}>{u.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Mô tả</label>
-                                <textarea 
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.description}
-                                    onChange={e => setData('description', e.target.value)}
-                                />
-                            </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Độ ưu tiên</label>
+                                        <select 
+                                            className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 bg-white cursor-pointer shadow-sm"
+                                            value={data.priority} 
+                                            onChange={e => setData('priority', e.target.value)}
+                                        >
+                                            <option value="Thấp">🟢 Thấp</option>
+                                            <option value="Trung bình">🟡 Trung bình</option>
+                                            <option value="Cao">🔴 Cao</option>
+                                        </select>
+                                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Deadline</label>
-                                <input type="datetime-local" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                                    value={data.deadline} 
-                                    onChange={e => setData('deadline', e.target.value)}
-                                 />
-                                {editErrors.deadline && <div className="text-red-500 text-xs mt-1">{editErrors.deadline}</div>}
-                            </div>
-                            <div className="flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Hủy</button>
-                                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition">Cập nhật</button>
-                            </div>
-                        </form>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Trạng thái công việc</label>
+                                        <select 
+                                            className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 bg-white cursor-pointer shadow-sm"
+                                            value={data.status} 
+                                            onChange={e => setData('status', e.target.value)}
+                                        >
+                                            <option value="Chưa làm">⚪ Chưa làm</option>
+                                            <option value="Đang làm">🔵 Đang làm</option>
+                                            <option value="Chờ duyệt">🟠 Chờ duyệt</option>
+                                            <option value="Hoàn thành">✅ Hoàn thành</option>
+                                            <option value="Quá hạn">⚠️ Quá hạn</option>
+                                            <option value="Từ chối">❌ Từ chối</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Người thực hiện</label>
+                                        <select 
+                                            className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 bg-white cursor-pointer shadow-sm"
+                                            value={data.user_id} 
+                                            onChange={e => setData('user_id', e.target.value)}
+                                        >
+                                            <option value="">Chọn người thực hiện</option>
+                                            {users.map(u => (
+                                                <option key={u.id} value={u.id}>{u.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Hạn chót</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            className={`w-full px-5 py-3.5 rounded-2xl border ${editErrors.deadline ? 'border-red-300 bg-red-50' : 'border-slate-200'} focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 shadow-sm`}
+                                            value={data.deadline} 
+                                            onChange={e => setData('deadline', e.target.value)}
+                                        />
+                                        {editErrors.deadline && <div className="text-red-500 text-xs font-semibold mt-2 ml-1 italic">{editErrors.deadline}</div>}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Nội dung công việc</label>
+                                    <textarea 
+                                        rows="4"
+                                        className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-600 placeholder:text-slate-400 resize-none shadow-sm"
+                                        value={data.description}
+                                        onChange={e => setData('description', e.target.value)}
+                                        placeholder="Nhập ghi chú chi tiết cho công việc này..."
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-5 pt-4">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsModalOpen(false)} 
+                                        className="flex-1 px-8 py-4 text-sm font-semibold text-slate-500 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-all active:scale-95"
+                                    >
+                                        Hủy bỏ
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-[2] px-8 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                    >
+                                        <span>Lưu thay đổi</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

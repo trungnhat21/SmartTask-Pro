@@ -124,8 +124,8 @@ export default function Users({ auth, users, filters = {} }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-100">
-                                    {users.length > 0 ? (
-                                        users.map((user) => (
+                                    {users.data && users.data.length > 0 ? (
+                                        users.data.map((user) => (
                                             <tr key={user.id} className="hover:bg-indigo-50/30 transition-colors duration-150">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
@@ -151,7 +151,7 @@ export default function Users({ auth, users, filters = {} }) {
                                                     </Link>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                    <span className={`px-4 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold ${
+                                                    <span className={`px-4 py-1 rounded-full text-[11px] uppercase tracking-wider font-semibold ${
                                                         user.status === 'blocked' 
                                                         ? 'bg-red-100 text-red-700' 
                                                         : 'bg-emerald-100 text-emerald-700'
@@ -210,6 +210,42 @@ export default function Users({ auth, users, filters = {} }) {
                                     )}
                                 </tbody>
                             </table>
+                            {/* Phân trang */}
+                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                                <div className="flex gap-1">
+                                    {users.links.map((link, index) => {
+                                        // Kiểm tra nếu là dấu ba chấm
+                                        const isDots = link.label === "...";
+
+                                        return (
+                                            <button
+                                                key={index}
+                                                disabled={!link.url || isDots}
+                                                onClick={() => {
+                                                    if (!isDots && link.url) {
+                                                        router.get(link.url, { search, role }, { preserveState: true });
+                                                    }
+                                                }}
+                                                className={`px-3 py-1 text-[11px] font-semibold rounded-lg border transition-all ${
+                                                    link.active 
+                                                        ? 'bg-indigo-600 text-white border-indigo-600' 
+                                                        : isDots
+                                                            ? 'bg-transparent text-gray-400 border-none cursor-default'
+                                                            : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
+                                                } ${(!link.url && !isDots) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                dangerouslySetInnerHTML={{ 
+                                                    __html: link.label
+                                                        .replace('&laquo; Previous', 'Trước')
+                                                        .replace('Next &raquo;', 'Sau') 
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    Hiển thị <span className="font-semibold">{users.from || 0}</span> - <span className="font-semibold">{users.to || 0}</span> trên tổng số <span className="font-semibold">{users.total}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -265,8 +265,8 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
-                        {tasks && tasks.length > 0 ? (
-                            tasks.map((task) => (
+                        {tasks.data && tasks.data.length > 0 ? (
+                            tasks.data.map((task) => (
                                 <div 
                                     key={task.id} 
                                     className={`group relative flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
@@ -430,9 +430,64 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                     <i className="fa-solid fa-folder-open text-3xl text-gray-300"></i>
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-800">Mọi thứ đều sạch sẽ!</h3>
-                                <p className="text-gray-500 mt-2">Hãy bắt đầu bằng cách tạo một công việc mới.</p>
+                                <p className="text-gray-500 mt-2">Hãy bắt đầu bằng cách tạo một công việc mới</p>
                             </div>
                         )}
+                    </div>
+                    {/* Phân trang*/}
+                    <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-6 bg-white rounded-[32px] border border-gray-100 shadow-sm shadow-indigo-50/50">
+                        <div className="flex items-center gap-3 order-2 md:order-1">
+                            <div className="flex -space-x-2">
+                                <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            </div>
+                            <p className="text-sm text-gray-500 font-medium">
+                                Đang xem <span className="text-gray-900 font-bold">{tasks.from || 0}</span> đến <span className="text-gray-900 font-bold">{tasks.to || 0}</span> 
+                                <span className="mx-2 text-gray-400">trên</span> 
+                                Tổng số <span className="text-indigo-600 font-extrabold">{tasks.total}</span> công việc
+                            </p>
+                        </div>
+
+                        <nav className="flex items-center gap-2 order-1 md:order-2">
+                            {tasks.links.map((link, index) => {
+                                const isDots = link.label === "...";
+                                const isPrevious = link.label.includes('Previous');
+                                const isNext = link.label.includes('Next');
+
+                                return (
+                                    <button
+                                        key={index}
+                                        disabled={!link.url || isDots}
+                                        onClick={() => {
+                                            if (link.url && !isDots) {
+                                                router.get(link.url, { search, priority }, { 
+                                                    preserveState: true,
+                                                    preserveScroll: true 
+                                                });
+                                            }
+                                        }}
+                                        className={`
+                                            min-w-[42px] h-10 px-3 flex items-center justify-center rounded-2xl text-[13px] font-bold transition-all duration-300
+                                            ${link.active 
+                                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-105 ring-4 ring-indigo-50' 
+                                                : isDots
+                                                    ? 'text-gray-400 cursor-default'
+                                                    : 'bg-gray-50 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 border border-transparent hover:border-indigo-100'
+                                            }
+                                            ${(!link.url && !isDots) ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer active:scale-90'}
+                                            ${isPrevious || isNext ? 'bg-white border-gray-100 px-4' : ''}
+                                        `}
+                                    >
+                                        {isPrevious ? (
+                                            <i className="fa-solid fa-chevron-left text-[10px]"></i>
+                                        ) : isNext ? (
+                                            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+                                        ) : (
+                                            link.label
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </nav>
                     </div>
                 </div>
             </div>

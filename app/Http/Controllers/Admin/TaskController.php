@@ -34,7 +34,12 @@ class TaskController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $tasks = $query->orderBy('deadline', 'asc')->get()->map(function ($task) {
+        $tasksPaginated = $query->orderBy('deadline', 'asc')
+                                ->paginate(10)
+                                ->onEachSide(1)
+                                ->withQueryString();
+
+        $tasksPaginated->getCollection()->transform(function ($task) {
             if ($task->deadline) {
                 $now = Carbon::now('Asia/Ho_Chi_Minh');
                 $deadline = Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');
@@ -59,7 +64,7 @@ class TaskController extends Controller
         });
 
         return Inertia::render('Admin/Task', [
-            'tasks' => $tasks,
+            'tasks' => $tasksPaginated,
             'users' => User::all(['id', 'name']),
             'filters' => $request->only(['priority', 'status', 'user_id'])
         ]);

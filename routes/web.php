@@ -11,6 +11,8 @@ use App\Http\Controllers\ThongkeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\FeedBackController;
+use App\Http\Controllers\Admin\AdminPDFController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -86,6 +88,7 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
 
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('adminDashboard.index');
 
+    // User phía Admin
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -93,6 +96,11 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     
+    // Feedbacks
+    Route::get('/feedbacks', [FeedBackController::class, 'index'])->name('feedbacks.index');
+    Route::delete('/feedbacks/{id}', [FeedBackController::class, 'destroy'])->name('feedbacks.destroy');
+    Route::post('/feedbacks/delete-all', [FeedBackController::class, 'deleteAll'])->name('feedbacks.deleteAll');
+
     // Quản lý Tasks cho Admin
     Route::get('/tasks', [AdminTaskController::class, 'index'])->name('tasks.index');
     
@@ -105,6 +113,10 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     Route::delete('/tasks/{task}', [AdminTaskController::class, 'destroy'])->name('tasks.destroy');
     Route::patch('/tasks/{id}/approve', [AdminTaskController::class, 'approve'])->name('tasks.approve');
     Route::patch('/tasks/{id}/reject', [AdminTaskController::class, 'reject'])->name('tasks.reject');
+
+    // Bảng xếp hạng PDF
+    Route::get('/adminpdf', [AdminPDFController::class, 'index'])->name('adminpdf.index');
+    Route::get('/export-ranking', [AdminPDFController::class, 'export'])->name('admin.ranking.export');
 });
 
 require __DIR__.'/auth.php';

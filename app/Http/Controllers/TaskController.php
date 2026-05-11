@@ -27,7 +27,12 @@ class TaskController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        $tasks = $query->latest()->get()->map(function ($task) {
+        $tasks = $query->latest()
+        ->paginate(10) 
+        ->onEachSide(1)
+        ->withQueryString()
+        ->through(function ($task) {
+            
             if ($task->deadline) {
                 $now = \Carbon\Carbon::now('Asia/Ho_Chi_Minh');
                 $deadline = \Carbon\Carbon::parse($task->deadline, 'Asia/Ho_Chi_Minh');

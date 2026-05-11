@@ -31,7 +31,9 @@ class UserController extends Controller
                 $query->where('role', $role);
             })
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate(10)
+            ->onEachSide(1)
+            ->withQueryString();
 
         return Inertia::render('Admin/Users', [
             'users' => $users,

@@ -116,7 +116,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
                                                 task.priority === 'Cao' 
                                                 ? 'bg-red-50 text-red-600 border-red-100' 
                                                 : 'bg-blue-50 text-blue-600 border-blue-100'
@@ -127,7 +127,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                     )) : (
                                         <div className="text-center py-12">
                                             <div className="text-4xl mb-4">🎉</div>
-                                            <p className="text-slate-400 font-medium">Tuyệt vời! Bạn không còn công việc nào tồn đọng.</p>
+                                            <p className="text-slate-400 font-medium">Tuyệt vời! Bạn không còn công việc nào tồn đọng</p>
                                         </div>
                                     )}
                                 </div>
