@@ -4,12 +4,13 @@ use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\ThongkeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\SupportController;
+
+use App\Http\Controllers\Admin\TaskController as AdminTaskController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\FeedBackController;
 use App\Http\Controllers\Admin\AdminPDFController;
@@ -28,7 +29,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 
 // Task User
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+    //AI
+    Route::post('/dashboard/ai-chat', [DashboardController::class, 'aiChat'])->name('ai.chat');
+
     Route::get('/quan-ly-cong-viec', [TaskController::class, 'index'])->name('Quanlycongviec');
 
     Route::get('/quan-ly-cong-viec/them-moi', [TaskController::class, 'create'])->name('task.create');

@@ -15,6 +15,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const [showError, setShowError] = useState(false);
 
+    const handleLogout = () => {
+        localStorage.removeItem(`chat_history_${auth.user.id}`);
+    };
+    
     useEffect(() => {
         if (flash && flash.error) {
             setShowError(true);
@@ -144,6 +148,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 href={route('logout')} 
                                                 method="post"
                                                 as="button"
+                                                onClick={handleLogout}
                                                 className="flex w-full items-center gap-2 text-red-600 hover:bg-red-50"
                                             >
                                                 <i className="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
@@ -194,7 +199,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>Hồ sơ</ResponsiveNavLink>
-                            <ResponsiveNavLink method="post" href={route('logout')} as="button" className="text-red-600">
+                            <ResponsiveNavLink method="post" href={route('logout')} as="button" onClick={handleLogout} className="text-red-600">
                                 Đăng xuất
                             </ResponsiveNavLink>
                         </div>

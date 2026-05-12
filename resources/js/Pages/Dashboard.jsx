@@ -1,9 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
 export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0, completed: 0, percentage: 0 } }) {
-
     const messages = [
         <>Chào <span className="font-bold underline decoration-wavy">{auth.user.name}</span>! Bạn đang có <span className="px-2 py-0.5 bg-white text-indigo-600 rounded-md font-black mx-1">{upcomingTasks.length}</span> công việc sắp đến hạn. Hãy ưu tiên các mục quan trọng nhé!</>,
         <>Hiệu suất làm việc của bạn đang đạt <span className="px-2 py-0.5 bg-white text-indigo-600 rounded-md font-black mx-1">{stats.percentage}%</span>. Một kết quả rất ấn tượng, hãy tiếp tục duy trì nhé!</>,
@@ -18,16 +18,90 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
     useEffect(() => {
         const interval = setInterval(() => {
             setFade(false);
-            
             setTimeout(() => {
                 setCurrentMsgIndex((prevIndex) => (prevIndex + 1) % messages.length);
                 setFade(true);
             }, 500);
-
         }, 5000);
-
         return () => clearInterval(interval);
     }, []);
+
+    // AI
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [chatInput, setChatInput] = useState('');
+    const [imagePreview, setImagePreview] = useState(null); // Để xem trước ảnh
+    const [isTyping, setIsTyping] = useState(false);
+    const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+
+    // Khởi tạo chatHistory từ localStorage
+    const [chatHistory, setChatHistory] = useState(() => {
+        const savedChat = localStorage.getItem(`chat_history_${auth.user.id}`);
+        return savedChat ? JSON.parse(savedChat) : [
+            { role: 'ai', text: `Xin chào ${auth.user.name}, tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?` }
+        ];
+    });
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    // Lưu chat vào localStorage mỗi khi lịch sử thay đổi
+    useEffect(() => {
+        localStorage.setItem(`chat_history_${auth.user.id}`, JSON.stringify(chatHistory));
+    }, [chatHistory]);
+
+    // Tự động cuộn xuống khi có tin nhắn mới
+    useEffect(() => {
+        if (isAiModalOpen) {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }
+    }, [chatHistory, isAiModalOpen, isTyping]);
+
+    // Xử lý chọn ảnh và chuyển sang Base64
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if ((!chatInput.trim() && !imagePreview) || isTyping) return;
+
+        const userMsg = chatInput;
+        const currentImage = imagePreview;
+
+        // Cập nhật UI ngay lập tức
+        setChatHistory(prev => [...prev, { 
+            role: 'user', 
+            text: userMsg, 
+            image: currentImage
+        }]);
+        
+        setChatInput('');
+        setImagePreview(null);
+        setIsTyping(true);
+
+        try {
+            const response = await axios.post(route('ai.chat'), { 
+                prompt: userMsg,
+                image: currentImage 
+            });
+            setChatHistory(prev => [...prev, { role: 'ai', text: response.data.response }]);
+        } catch (error) {
+            setChatHistory(prev => [...prev, { role: 'ai', text: 'Rất tiếc, đã có lỗi xảy ra' }]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
 
     return (
         <AuthenticatedLayout
@@ -116,7 +190,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border ${
                                                 task.priority === 'Cao' 
                                                 ? 'bg-red-50 text-red-600 border-red-100' 
                                                 : 'bg-blue-50 text-blue-600 border-blue-100'
@@ -178,16 +252,90 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
             </div>
 
             <div className="fixed bottom-8 right-8 z-50">
-                <button className="group relative flex items-center gap-3 bg-slate-900 text-white pl-4 pr-6 py-3.5 rounded-2xl shadow-2xl hover:bg-indigo-600 transition-all duration-300 hover:pr-8 active:scale-95">
+                <button 
+                    onClick={() => setIsAiModalOpen(true)}
+                    className="group relative flex items-center gap-3 bg-slate-900 text-white pl-4 pr-6 py-3.5 rounded-2xl shadow-2xl hover:bg-indigo-600 transition-all duration-300 hover:pr-8 active:scale-95"
+                >
                     <div className="relative">
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900 group-hover:border-indigo-600 transition-all"></div>
                         <svg className="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </div>
-                    <span className="text-sm font-bold tracking-wide">Hỏi AI Trợ Lý</span>
+                    <span className="text-sm font-semibold tracking-wide">Hỏi AI Trợ Lý</span>
                 </button>
             </div>
+
+            {isAiModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-end justify-end p-4 sm:p-8 pointer-events-none">
+
+                    <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 pointer-events-auto flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
+                        
+                        <div className="bg-slate-900 p-5 text-white flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-indigo-500 p-2 rounded-xl">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-semibold text-sm">Trợ lý Gemini AI</h4>
+                            </div>
+                            <button onClick={() => setIsAiModalOpen(false)} className="hover:bg-white/10 p-2 rounded-lg transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="flex-1 p-5 overflow-y-auto max-h-[500px] min-h-[300px] space-y-4 bg-slate-50/50">
+                            {chatHistory.map((msg, index) => (
+                                <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm ${
+                                        msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-200 rounded-tl-none'
+                                    }`}>
+                                        {msg.image && <img src={msg.image} alt="upload" className="mb-2 rounded-lg max-w-full h-auto" />}
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            ))}
+                            {isTyping && <div className="text-xs text-slate-400 italic">Đang trả lời...</div>}
+                            
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {imagePreview && (
+                            <div className="px-4 py-2 bg-slate-100 flex items-center gap-2">
+                                <div className="relative">
+                                    <img src={imagePreview} className="h-16 w-16 object-cover rounded-lg border-2 border-indigo-500" />
+                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px]">✕</button>
+                                </div>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-100 flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => fileInputRef.current.click()}
+                                    className="bg-slate-100 text-slate-600 p-2.5 rounded-xl hover:bg-slate-200 transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </button>
+                                <input type="file" hidden ref={fileInputRef} accept="image/*" onChange={handleImageChange} />
+                                
+                                <input 
+                                    type="text"
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    placeholder="Nhập câu hỏi hoặc gửi ảnh..."
+                                    className="flex-1 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <button type="submit" disabled={isTyping} className="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

@@ -129,7 +129,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                             <div>
-                                <h3 className="text-lg font-semibold text-slate-900">Danh sách công việc chi tiết</h3>
+                                <h3 className="text-lg font-semibold text-slate-900">Danh sách công việc</h3>
                             </div>
                             <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-full uppercase">Hệ thống</span>
                         </div>

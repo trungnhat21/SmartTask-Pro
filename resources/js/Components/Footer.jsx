@@ -32,10 +32,14 @@ export default function Footer() {
                                     Danh sách dự án
                                 </Link>
                             </li>
-                            <li><a href="#" className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">Trợ lý AI</a></li>
+                             <li>
+                                <Link href={route('dashboard')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
+                                    Trợ lý AI
+                                </Link>
+                            </li>
                             <li>
                                 <Link href={route('Cvthongminh')} className="text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 inline-block transition-colors">
-                                    Hướng dẫn sử dụng
+                                    Gợi ý công việc
                                 </Link>
                             </li>
                         </ul>

@@ -6,7 +6,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="font-semibold text-2xl text-orange-900 tracking-tight">
+                <h2 className="font-semibold text-2xl tracking-tight">
                     Lộ trình Thông minh
                 </h2>
             }
@@ -76,7 +76,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
                                                         <i className="fa-regular fa-calendar-check text-orange-500"></i>
                                                         <span>{task.deadline ? new Date(task.deadline).toLocaleDateString('vi-VN') : 'Chưa đặt hạn'}</span>
                                                     </div>
-                                                    <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-black uppercase border ${
+                                                    <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-semibold uppercase border ${
                                                         task.priority === 'Cao' 
                                                         ? 'bg-orange-50 text-orange-600 border-orange-100' 
                                                         : 'bg-slate-50 text-slate-500 border-slate-100'

@@ -55,15 +55,24 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
 
     // Cập nhật trạng thái công việc
     const updateStatus = (id, newStatus) => {
-        const task = tasks.find(t => t.id === id);
-        
+        const task = tasks.data.find(t => t.id === id);
+
         if (task.created_by_admin && newStatus === 'Hoàn thành') {
             setCurrentTaskId(id);
             setIsReportModalOpen(true);
         } else {
-            router.patch(route('task.update-status', id), {
-                status: newStatus
-            }, { preserveScroll: true });
+            router.post(route('task.update-status', id), {
+                _method: 'patch',
+                status: newStatus,
+            }, {
+                preserveScroll: true,
+                onSuccess: () => {
+                },
+                onError: (errors) => {
+                    console.error("Lỗi cập nhật:", errors);
+                    alert("Không thể cập nhật trạng thái!");
+                }
+            });
         }
     };
 
@@ -197,7 +206,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
             <div className="py-8 bg-orange-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="bg-gray-300 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-200/50 p-5 mb-10">
+                    <div className="bg-gray-200 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-200/50 p-5 mb-10">
                         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                             
                             <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-slate-100/50 p-1.5 rounded-[1.5rem] border border-slate-200/40">

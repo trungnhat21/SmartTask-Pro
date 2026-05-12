@@ -85,7 +85,7 @@ export default function PDF({ auth, tasks }) {
                             </div>
 
                             <div className="mt-6 flex justify-between items-center text-[11px] text-slate-400 font-bold uppercase tracking-widest px-2">
-                                <span>Hệ thống báo cáo nội bộ</span>
+                                <span>Xuất báo cáo</span>
                                 <span>{new Date().toLocaleDateString('vi-VN')}</span>
                             </div>
                         </div>
