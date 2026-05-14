@@ -92,8 +92,8 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => [
+            'name' => 'required|string|max:255',
+            'email' => [
                 'required',
                 'string',
                 'email',
@@ -101,14 +101,21 @@ class UserController extends Controller
                 'unique:users,email,' . $user->id,
                 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/'
             ],
+
+            'password' => ['nullable', Rules\Password::defaults()],
             'role' => 'sometimes|in:admin,user,manager,approve',
             'status' => 'sometimes|string|in:active,blocked',
         ], [
-            'email.regex' => 'Định dạng email không hợp lệ',
+            'email.regex' => 'Định dạng email không hợp lệ (yêu cầu @gmail.com)',
+            'email.email' => 'Địa chỉ email không đúng định dạng',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
 
         if ($request->has('role')) {
             if ($user->id === Auth::id() && $request->role !== 'admin') {
@@ -126,7 +133,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.users.index')->with('message', 'Cập nhật thành công');
+        return redirect()->route('admin.users.index')->with('message', 'Cập nhật người dùng thành công');
     }
 
     // Xóa người dùng khỏi hệ thống

@@ -23,7 +23,7 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
 
     return (
         <AdminLayout
-            header={<h2 className="font-semibold text-xl text-slate-800 leading-tight">Bảng điều khiển hệ thống</h2>}
+            header={<h2 className="font-semibold text-xl text-slate-800 leading-tight">Tổng quan hệ thống</h2>}
         >
             <Head title="Admin Dashboard" />
 

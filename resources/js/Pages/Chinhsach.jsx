@@ -33,7 +33,7 @@ export default function Chinhsach({ auth }) {
             user={auth.user}
             header={
                 <div className="flex flex-col">
-                    <h2 className="font-semibold text-3xl text-slate-800 tracking-tight">Chính sách hệ thống</h2>
+                    <h2 className="font-semibold text-3xl text-slate-800 tracking-tight">Chính sách Hệ thống</h2>
                 </div>
             }
         >

@@ -71,22 +71,22 @@ export default function DeleteUserForm({ className = '' }) {
                             <i className="fa-solid fa-circle-exclamation"></i>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-800 tracking-tighter">
+                            <h2 className="text-2xl font-semibold text-slate-800 tracking-tighter">
                                 Xác nhận xóa vĩnh viễn?
                             </h2>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Hành động nguy hiểm</p>
+                            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mt-1">Hành động nguy hiểm</p>
                         </div>
                     </div>
 
-                    <p className="text-sm text-slate-500 leading-relaxed font-medium mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        Để đảm bảo tính bảo mật, vui lòng nhập mật khẩu xác nhận của bạn. Hệ thống sẽ ngay lập tức ngắt kết nối và xóa dữ liệu sau khi bạn xác nhận.
+                    <p className="text-sm text-slate-500 leading-relaxed font-semibold mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        Để đảm bảo tính bảo mật, vui lòng nhập mật khẩu xác nhận của bạn. Hệ thống sẽ ngay lập tức ngắt kết nối và xóa dữ liệu sau khi bạn xác nhận
                     </p>
 
                     <div className="space-y-2">
                         <InputLabel
                             htmlFor="password"
                             value="Mật khẩu của bạn"
-                            className="font-bold text-slate-700 ml-1"
+                            className="font-semibold text-slate-700 ml-1"
                         />
 
                         <TextInput
@@ -107,7 +107,7 @@ export default function DeleteUserForm({ className = '' }) {
                     <div className="mt-10 flex items-center justify-end gap-3">
                         <button
                             type="button"
-                            className="px-6 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"
+                            className="px-6 py-3 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"
                             onClick={closeModal}
                         >
                             Tôi muốn quay lại
@@ -115,7 +115,7 @@ export default function DeleteUserForm({ className = '' }) {
 
                         <button
                             disabled={processing}
-                            className={`px-8 py-3 bg-rose-600 text-white font-black text-sm rounded-xl shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`px-8 py-3 bg-rose-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {processing ? (
                                 <span className="flex items-center gap-2">

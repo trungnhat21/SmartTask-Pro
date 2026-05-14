@@ -108,7 +108,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold tracking-tight text-slate-800">
-                        Bảng Điều Khiển Hệ Thống
+                        Tổng quan Công việc
                     </h2>
                     <div className="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                         {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}

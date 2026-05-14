@@ -63,25 +63,29 @@ class DashboardController extends Controller {
             $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" . $apiKey;
             
             $parts = [];
-            $parts[] = ['text' => $prompt];
+            $parts[] = ['text' => $prompt ?? 'Hãy phân tích hình ảnh này'];
 
             if ($imageInput) {
-                if (preg_match('/^data:(image\/(\w+));base64,(.*)$/', $imageInput, $matches)) {
+                if (preg_match('/^data:(image\/(?:png|jpe?g|webp|gif));base64,(.+)$/i', $imageInput, $matches)) {
                     $mimeType = $matches[1];
-                    $base64Data = $matches[3];
+                    $base64Data = trim($matches[2]);
 
-                    $parts[] = [
-                        'inline_data' => [
-                            'mime_type' => $mimeType,
-                            'data'      => $base64Data
-                        ]
-                    ];
+                    if (!empty($base64Data)) {
+                        $parts[] = [
+                            'inline_data' => [
+                                'mime_type' => $mimeType,
+                                'data'      => $base64Data
+                            ]
+                        ];
+                    }
                 }
             }
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post($url, [
+            ])
+            ->timeout(60)
+            ->post($url, [
                 'contents' => [
                     [
                         'parts' => $parts
