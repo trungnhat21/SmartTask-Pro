@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\TaskFeedback;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
 
 class TaskController extends Controller
 {
@@ -117,6 +118,14 @@ class TaskController extends Controller
 
         $task->update($validated);
 
+        if (empty($task->ai_suggestion) && !empty($task->description)) {
+            $suggestion = $this->generateAiSuggestion($task->title, $task->description);
+            
+            if ($suggestion) {
+                $task->update(['ai_suggestion' => $suggestion]);
+            }
+        }
+
         return redirect()->route('Quanlycongviec');
     }
 
@@ -200,17 +209,52 @@ class TaskController extends Controller
             ],
             'description' => 'nullable|string',
         ], [
-            'title.required' => 'Vui lòng nhập tên công việc.',
-            'deadline.required' => 'Vui lòng chọn hạn chót.',
+            'title.required' => 'Vui lòng nhập tên công việc',
+            'deadline.required' => 'Vui lòng chọn hạn chót',
         ]);
 
         $validated['status'] = 'Chưa làm'; 
         $validated['user_id'] = auth()->id();
         $validated['created_by_admin'] = false; 
 
-        Task::create($validated);
+        $task = Task::create($validated);
+
+        if ($task->description) {
+            $suggestion = $this->generateAiSuggestion($task->title, $task->description);
+            if ($suggestion) {
+                $task->update(['ai_suggestion' => $suggestion]);
+            }
+        }
 
         return redirect()->route('Quanlycongviec');
+    }
+
+    private function generateAiSuggestion($title, $description)
+    {
+        $apiKey = env('GEMINI_API_KEY');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" . $apiKey;
+
+        $prompt = "Tôi có một công việc mang tên: '{$title}'. \nNội dung chi tiết: '{$description}'. \nHãy đóng vai một chuyên gia, đưa ra 3-5 bước ngắn gọn, gạch đầu dòng để thực hiện công việc này hiệu quả nhất";
+
+        try {
+            $response = Http::timeout(30)->post($url, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt]
+                        ]
+                    ]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                return $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            }
+            return null;
+        } catch (\Exception $e) {
+            \Log::error("Lỗi AI Suggestion: " . $e->getMessage());
+            return null;
+        }
     }
 
     // Hàm gửi phản hồi (Dùng chung cho cả User và Admin)

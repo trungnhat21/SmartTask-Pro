@@ -32,6 +32,18 @@ class AdminDashboardController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
+        if ($request->filled('sort_by') && in_array($request->sort_by, ['deadline', 'priority'])) {
+            $sortOrder = $request->input('sort_order', 'asc') === 'desc' ? 'desc' : 'asc';
+            
+            if ($request->sort_by === 'priority') {
+                $query->orderByRaw("FIELD(priority, 'Thấp', 'Trung bình', 'Cao') " . $sortOrder);
+            } else {
+                $query->orderBy($request->sort_by, $sortOrder);
+            }
+        } else {
+            $query->orderBy('deadline', 'asc');
+        }
+
         $overdueTasks = $query->orderBy('deadline', 'asc')
                               ->paginate(10)
                               ->onEachSide(1)
@@ -45,7 +57,7 @@ class AdminDashboardController extends Controller
             'completedTasks' => $completedTasks,
             'overdueTasks'   => $overdueTasks,
             'allUsers'       => $allUsers,
-            'filters'        => $request->only(['search', 'status', 'user_id']),
+            'filters'        => $request->only(['search', 'status', 'user_id', 'sort_by', 'sort_order']),
         ]);
     }
 }

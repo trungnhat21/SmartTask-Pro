@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Models\TaskFeedback;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class TaskController extends Controller
 {
@@ -22,6 +23,23 @@ class TaskController extends Controller
               ->where('user_id', '!=', auth()->id());
         }]);;
 
+        $activeUserIdFilter = $request->user_id;
+
+        if ($request->filled('task_id')) {
+            $userRole = auth()->user()->role;
+            
+            if ($userRole === 'admin' || $userRole === 'manager') {
+                $query->where('id', $request->task_id);
+                
+                $singleTask = Task::find($request->task_id);
+                if ($singleTask) {
+                    $activeUserIdFilter = $singleTask->user_id;
+                }
+            } else {
+                $query->where('id', $request->task_id)->where('user_id', auth()->id());
+            }
+        }
+
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
@@ -30,8 +48,8 @@ class TaskController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if (!empty($activeUserIdFilter)) {
+            $query->where('user_id', $activeUserIdFilter);
         }
 
         $tasksPaginated = $query->orderBy('deadline', 'asc')
@@ -66,7 +84,12 @@ class TaskController extends Controller
         return Inertia::render('Admin/Task', [
             'tasks' => $tasksPaginated,
             'users' => User::all(['id', 'name']),
-            'filters' => $request->only(['priority', 'status', 'user_id'])
+            'filters' => [
+                'priority' => $request->priority,
+                'status' => $request->status,
+                'user_id' => $activeUserIdFilter, 
+                'task_id' => $request->task_id,
+            ]
         ]);
     }
 
@@ -93,8 +116,15 @@ class TaskController extends Controller
             return back()->with('error', 'Bạn không có quyền xóa công việc');
         }
 
+        $previousUrl = url()->previous();
+
         $task->delete();
-        return back()->with('success', 'Đã xóa công việc thành công');
+        
+        if (str_contains($previousUrl, 'task_id=')) {
+            return redirect()->route('admin.adminDashboard.index')->with('success', 'Đã xóa công việc thành công');
+        }
+        return redirect()->route('admin.tasks.index', ['user_id' => $task->user_id])
+                         ->with('success', 'Đã xóa công việc thành công');
     }
 
     // Cập nhật thông tin chi tiết và thời hạn của công việc
@@ -129,6 +159,14 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+
+        if (empty($task->ai_suggestion) && !empty($task->description)) {
+            $suggestion = $this->generateAiSuggestion($task->title, $task->description);
+            if ($suggestion) {
+                $task->update(['ai_suggestion' => $suggestion]);
+            }
+        }
+
         return back()->with('success', 'Cập nhật thành công!');
     }
 
@@ -181,7 +219,7 @@ class TaskController extends Controller
 
         $validated['deadline'] = Carbon::parse($request->deadline, 'Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s');
 
-        Task::create([
+        $task = Task::create([
             'title' => $validated['title'],
             'user_id' => $validated['user_id'],
             'deadline' => $validated['deadline'],
@@ -191,7 +229,36 @@ class TaskController extends Controller
             'created_by_admin' => true, 
         ]);
 
-        return back()->with('success', 'Giao việc thành công!');
+        if ($task && $task->description) {
+            $suggestion = $this->generateAiSuggestion($task->title, $task->description);
+            if ($suggestion) {
+                $task->update(['ai_suggestion' => $suggestion]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Giao việc thành công!');
+    }
+
+    private function generateAiSuggestion($title, $description)
+    {
+        $apiKey = env('GEMINI_API_KEY');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" . $apiKey;
+
+        $prompt = "Tôi có một công việc mang tên: '{$title}'. \nNội dung chi tiết: '{$description}'. \nHãy đóng vai một chuyên gia, đưa ra 3-5 bước ngắn gọn, gạch đầu dòng để thực hiện công việc này hiệu quả nhất.";
+
+        try {
+            $response = Http::timeout(30)->post($url, [
+                'contents' => [['parts' => [['text' => $prompt]]]]
+            ]);
+
+            if ($response->successful()) {
+                return $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            }
+            return null;
+        } catch (\Exception $e) {
+            \Log::error("Lỗi AI Admin Suggestion: " . $e->getMessage());
+            return null;
+        }
     }
 
     public function getFeedbacks($taskId) {

@@ -260,9 +260,14 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                     Giao việc mới
                                 </button>
 
-                                <button onClick={handleDeleteAll} className="ml-auto bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700 font-medium transition">
-                                    Xóa danh sách này
-                                </button>
+                                {!filters?.task_id && (
+                                    <button 
+                                        onClick={handleDeleteAll} 
+                                        className="ml-auto bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700 font-medium transition"
+                                    >
+                                        Xóa danh sách này
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>
@@ -399,6 +404,30 @@ export default function Tasks({ auth, tasks, users, filters }) {
                     </div>
                 </div>
             </div>
+
+            {filters?.task_id && (
+                <div className="mb-6 mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between text-sm text-indigo-900 shadow-sm transition-all animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+                            <i className="fa-solid fa-circle-info"></i>
+                        </div>
+                        <div>
+                            <p className="font-semibold">Chế độ xem một công việc</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            router.get(route('admin.tasks.index'), {
+                                user_id: filters.user_id
+                            });
+                        }}
+                        className="px-4 py-2 bg-white hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl text-xs font-semibold border border-indigo-200 hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2"
+                    >
+                        <i className="fa-solid fa-user"></i> Xem tất cả công việc của người này
+                    </button>
+                </div>
+            )}
 
             {isReviewModalOpen && reviewTask && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70] p-4">

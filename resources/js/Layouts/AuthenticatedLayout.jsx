@@ -31,8 +31,8 @@ export default function AuthenticatedLayout({ header, children }) {
     }, [flash]);
 
     return (
-        <div className="min-h-screen bg-orange-200 flex flex-col pt-16">
-            <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-slate-200/60 bg-orange-500 backdrop-blur-md transition-all duration-300">
+        <div className="min-h-screen flex flex-col pt-16">
+            <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-slate-200/60 bg-indigo-400 backdrop-blur-md transition-all duration-300">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -42,7 +42,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <ApplicationLogo className="h-6 w-auto fill-current text-white" />
                                     </div>
                                     <span className="hidden md:block text-lg font-bold text-slate-900 tracking-tight">
-                                        SmartTask <span className="text-indigo-600">Pro</span>
+                                        SmartTask Pro
                                     </span>
                                 </Link>
                             </div>

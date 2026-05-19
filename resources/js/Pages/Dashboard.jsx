@@ -29,7 +29,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
     // AI
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [chatInput, setChatInput] = useState('');
-    const [imagePreview, setImagePreview] = useState(null); // Để xem trước ảnh
+    const [imagePreview, setImagePreview] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -121,7 +121,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
             <div className="py-10 bg-slate-50/50 min-h-screen">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-8">
                     
-                    <div className="relative overflow-hidden bg-indigo-600 rounded-2xl shadow-2xl shadow-indigo-200">
+                    <div className="relative overflow-hidden bg-indigo-500 rounded-2xl shadow-2xl shadow-indigo-200">
                         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                             <div className="p-8 text-white relative z-10">
                                 <div className="flex items-center gap-4">

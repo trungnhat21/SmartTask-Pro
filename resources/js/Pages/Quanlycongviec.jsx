@@ -203,10 +203,10 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         >
             <Head title="Quản lý công việc" />
 
-            <div className="py-8 bg-orange-100">
+            <div className="py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="bg-gray-200 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-200/50 p-5 mb-10">
+                    <div className="bg-gray-100 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-200/50 p-5 mb-10">
                         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                             
                             <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-slate-100/50 p-1.5 rounded-[1.5rem] border border-slate-200/40">
@@ -280,8 +280,8 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                     key={task.id} 
                                     className={`group relative flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
                                         task.status === 'Hoàn thành' 
-                                        ? 'bg-gray-50 border-gray-100 grayscale-[0.5]'
-                                        : 'bg-white border-gray-100 hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-50/50' 
+                                        ? 'bg-gray-50 border-gray-200 grayscale-[0.5]'
+                                        : 'bg-white border-gray-300 hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-50/50' 
                                     }`}
                                 >
                                     <div className="flex items-start gap-5">
@@ -503,34 +503,72 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
 
             {isModalOpen && selectedTask && (
                 <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-all duration-300">
-                    <div className="bg-white rounded-[2rem] shadow-2xl max-w-3xl w-full overflow-hidden border border-white animate-in zoom-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-3xl w-full overflow-hidden border border-white animate-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+                        
                         <div className="p-8 border-b flex justify-between items-center bg-indigo-50/50">
-                            <h3 className="text-2xl font-semibold text-gray-800 uppercase tracking-tight">Chi tiết công việc</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-red-500 transition-all shadow-sm">
+                            <div className="flex items-center space-x-3">
+                                <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                                    <i className="fa-solid fa-circle-info"></i>
+                                </div>
+                                <h3 className="text-2xl font-semibold text-gray-800 uppercase tracking-tight">Chi tiết công việc</h3>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-red-500 hover:rotate-90 transition-all shadow-sm">
                                 <i className="fa-solid fa-xmark"></i>
                             </button>
                         </div>
                         
-                        <div className="p-8 space-y-6">
+
+                        <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+                            
                             <div className="space-y-1">
-                                <label className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.2em]">Tên công việc</label>
-                                <p className="text-2xl font-semibold text-gray-900">{selectedTask.title}</p>
+                                <label className="text-[15px] font-semibold text-indigo-400 uppercase tracking-[0.2em] ml-1">Tên công việc</label>
+                                <p className="text-3xl font-semibold text-gray-900 leading-tight">
+                                    {selectedTask.title}
+                                </p>
                             </div>
                             
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.2em]">Nội dung thực hiện</label>
-                                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 min-h-[200px] text-gray-600 text-lg font-semibold leading-relaxed whitespace-pre-line shadow-inner">
-                                    {selectedTask.description || "Không có mô tả bổ sung."}
+                            <div className="space-y-3">
+                                <label className="text-[15px] font-semibold text-indigo-400 uppercase tracking-[0.2em] ml-1">Nội dung thực hiện</label>
+                                <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100 text-gray-700 text-lg font-medium leading-relaxed whitespace-pre-line shadow-inner">
+                                    {selectedTask.description || "Không có mô tả bổ sung"}
                                 </div>
                             </div>
+
+
+                            {selectedTask.description && (
+                                <div className="relative group">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[2rem] blur opacity-15 group-hover:opacity-25 transition duration-1000"></div>
+                                    <div className="relative space-y-3 bg-white p-6 rounded-[1.8rem] border border-indigo-50 shadow-sm">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                                    <i className="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                                </span>
+                                                <label className="text-[15px] font-semibold text-indigo-600 uppercase tracking-[0.2em]">Gợi ý thông minh từ AI</label>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-slate-600 text-base leading-relaxed whitespace-pre-line bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50 italic font-semibold">
+                                            {selectedTask.ai_suggestion ? (
+                                                selectedTask.ai_suggestion
+                                            ) : (
+                                                <div className="flex items-center space-x-2 text-slate-400">
+                                                    <div className="h-2 w-2 bg-slate-300 rounded-full animate-bounce"></div>
+                                                    <span>AI đang phân tích yêu cầu của bạn...</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="p-6 text-center">
+                        <div className="p-8 pt-4">
                             <button 
                                 onClick={() => setIsModalOpen(false)} 
-                                className="w-full py-5 bg-gray-900 text-white rounded-2xl font-semibold text-lg hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200"
+                                className="w-full py-5 bg-gray-900 text-white rounded-2xl font-bold text-lg hover:bg-indigo-600 active:scale-[0.98] transition-all shadow-xl shadow-indigo-100 flex items-center justify-center space-x-2"
                             >
-                                Đã xem xong
+                                <span>Hoàn tất xem</span>
                             </button>
                         </div>
                     </div>

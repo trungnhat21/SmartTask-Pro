@@ -104,7 +104,7 @@ export default function Chinhsach({ auth }) {
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                             <div>
                                 <h4 className="text-3xl font-semibold text-white mb-3">Bạn cần sự trợ giúp?</h4>
-                                <p className="text-indigo-200/80 font-medium italic">Đội ngũ kỹ thuật luôn sẵn sàng giải đáp mọi thắc mắc của bạn 24/7</p>
+                                <p className="text-indigo-200/80 font-medium italic">Đội ngũ luôn sẵn sàng giải đáp mọi thắc mắc của bạn 24/7</p>
                             </div>
                             <button 
                                 onClick={() => setShowModal(true)}
@@ -125,7 +125,7 @@ export default function Chinhsach({ auth }) {
                             <i className="fa-solid fa-headset"></i>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Hỗ trợ kỹ thuật</h2>
+                            <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Hỗ trợ</h2>
                             <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">Gửi thắc mắc của bạn</p>
                         </div>
                     </div>
