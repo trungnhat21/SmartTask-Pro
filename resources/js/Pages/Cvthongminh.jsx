@@ -6,7 +6,7 @@ export default function Cvthongminh({ auth, smartTasks }) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="font-semibold text-2xl tracking-tight text-indigo-900">
+                <h2 className="font-semibold text-2xl">
                     Lộ trình Thông minh
                 </h2>
             }

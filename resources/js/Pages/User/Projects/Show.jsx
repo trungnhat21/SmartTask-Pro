@@ -13,7 +13,7 @@ export default function Show({ auth, project, members, activities = [] }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={<h2 className="font-bold text-2xl text-slate-900 tracking-tight">Dự án: {project.name}</h2>}>
+        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-2xl text-slate-900 tracking-tight">Dự án: {project.name}</h2>}>
             <Head title={project.name} />
             
             <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

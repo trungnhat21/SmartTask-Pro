@@ -93,7 +93,7 @@ export default function Index({ projects, filters }) {
                                         <th className="px-8 py-5 font-semibold">Tên dự án</th>
                                         <th className="px-6 py-5 font-semibold">Mức độ ưu tiên</th>
                                         <th className="px-6 py-5 font-semibold">Deadline</th>
-                                        <th className="px-6 py-5 font-semibold">Thực hiện</th>
+                                        <th className="px-6 py-5 font-semibold">Chi tiết dự án</th>
                                         <th className="px-6 py-5 font-semibold">Tiến độ</th>
                                         <th className="px-8 py-5 text-right font-semibold">Hành động</th>
                                     </tr>
@@ -119,7 +119,7 @@ export default function Index({ projects, filters }) {
                                                     <td className="px-6 py-6 text-sm text-slate-600">{proj.deadline ? new Date(proj.deadline).toLocaleDateString('vi-VN') : '---'}</td>
                                                     <td className="px-6 py-6">
                                                         <Link href={route('admin.projects.show', proj.id)} className="text-sm font-semibold text-indigo-600">
-                                                            {members.length} Thành viên
+                                                            Xem
                                                         </Link>
                                                     </td>
                                                     <td className="px-6 py-6"><ProgressCircle percent={progress} /></td>

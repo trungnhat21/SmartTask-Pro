@@ -58,6 +58,22 @@ export default function ProjectForm({ auth, allUsers, project }) {
         }
     };
 
+    const getAvailableUsers = (currentIndex) => {
+    const selectedUserIds = data.tasks
+        .map((task, index) => (index !== currentIndex ? String(task.user_id || '') : null))
+        .filter(id => id !== '' && id !== null);
+
+    return allUsers.filter(user => {
+        const userIdString = String(user.id);
+        const currentTaskIdString = String(data.tasks[currentIndex].user_id || '');
+        
+        const isSelectedByOther = selectedUserIds.includes(userIdString);
+        const isCurrentSelection = userIdString === currentTaskIdString;
+        
+        return !isSelectedByOther || isCurrentSelection;
+    });
+};
+
     return (
         <AdminLayout
             header={
@@ -78,7 +94,6 @@ export default function ProjectForm({ auth, allUsers, project }) {
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            {/* Tên dự án */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">Tên dự án <span className="text-red-500">*</span></label>
                                 <input 
@@ -89,7 +104,6 @@ export default function ProjectForm({ auth, allUsers, project }) {
                                 {errors.name && <p className="text-red-500 text-xs mt-1 font-medium">{errors.name}</p>}
                             </div>
 
-                            {/* Cấu hình Mức độ & Hạn chót */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">Mức độ ưu tiên</label>
@@ -110,13 +124,11 @@ export default function ProjectForm({ auth, allUsers, project }) {
                                 </div>
                             </div>
 
-                            {/* Số lượng thành viên */}
                             <div className="sm:w-1/3">
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">Số lượng thành viên tham gia <span className="text-red-500">*</span></label>
                                 <input type="number" min="1" value={memberCount} onChange={handleCountChange} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-500 outline-none font-semibold text-indigo-600" />
                             </div>
 
-                            {/* Bảng nhập phân công công việc động */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-3">Phân công chi tiết công việc</label>
                                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-slate-50/50 p-4 space-y-3">
@@ -124,9 +136,17 @@ export default function ProjectForm({ auth, allUsers, project }) {
                                         <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 bg-white border border-slate-100 rounded-xl items-center">
                                             <div className="md:col-span-1 text-center font-bold text-slate-400 text-sm">#{index + 1}</div>
                                             <div className="md:col-span-3">
-                                                <select value={task.user_id} onChange={e => handleTaskFieldChange(index, 'user_id', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 outline-none">
+                                                <select 
+                                                    value={task.user_id} 
+                                                    onChange={e => handleTaskFieldChange(index, 'user_id', e.target.value)} 
+                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 outline-none"
+                                                >
                                                     <option value="">-- Chọn người làm --</option>
-                                                    {allUsers?.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}
+                                                    {getAvailableUsers(index).map(user => (
+                                                        <option key={user.id} value={user.id}>
+                                                            {user.name}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                                 {errors[`tasks.${index}.user_id`] && <p className="text-red-500 text-[11px] mt-0.5">{errors[`tasks.${index}.user_id`]}</p>}
                                             </div>
@@ -144,7 +164,6 @@ export default function ProjectForm({ auth, allUsers, project }) {
                                 {errors.tasks && <p className="text-red-500 text-xs mt-1 font-medium">{errors.tasks}</p>}
                             </div>
 
-                            {/* Mô tả & Nút */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-2">Mô tả nội dung</label>
                                 <textarea rows="4" value={data.description} onChange={e => setData('description', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-indigo-500 outline-none resize-none"></textarea>

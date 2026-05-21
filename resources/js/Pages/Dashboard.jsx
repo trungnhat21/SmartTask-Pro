@@ -79,7 +79,6 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
         const userMsg = chatInput;
         const currentImage = imagePreview;
 
-        // Cập nhật UI ngay lập tức
         setChatHistory(prev => [...prev, { 
             role: 'user', 
             text: userMsg, 
@@ -116,7 +115,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                 </div>
             }
         >
-            <Head title="Bảng Điều Khiển" />
+            <Head title="Trang chủ" />
 
             <div className="py-10 bg-slate-50/50 min-h-screen">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-8">

@@ -11,7 +11,7 @@ export default function Index({ auth, projects, filters }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl">Dự án tham gia</h2>}>
+        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-2xl">Dự án tham gia</h2>}>
             <Head title="Dự án của tôi" />
             <div className="py-12 max-w-7xl mx-auto px-4">
                 

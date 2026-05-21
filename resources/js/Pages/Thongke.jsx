@@ -15,7 +15,7 @@ export default function Thongke({ auth, stats, weeklyData }) {
             header={
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h2 className="font-semibold text-3xl text-slate-800 tracking-tight">Báo cáo Thống kê</h2>
+                        <h2 className="font-semibold text-2xl text-slate-800 tracking-tight">Báo cáo Thống kê</h2>
                     </div>
                     <div className="shrink-0">
                         <a 
@@ -179,7 +179,7 @@ function StatCard({ title, value, icon, color, isSpin = false }) {
                 <div className="size-2 rounded-full bg-slate-200 group-hover:bg-indigo-500 transition-colors"></div>
             </div>
             <div className="mt-6">
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.15em] opacity-70">{title}</p>
+                <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-[0.15em] opacity-70">{title}</p>
                 <div className="flex items-baseline gap-1">
                     <p className="text-4xl font-black text-slate-800 mt-1">{value}</p>
                     <span className="text-slate-400 text-xs font-bold">items</span>
