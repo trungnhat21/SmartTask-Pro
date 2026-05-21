@@ -29,7 +29,7 @@ export default function Index({ auth }) {
                                         href={route('dashboard')}
                                         className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors"
                                     >
-                                        Bảng điều khiển →
+                                        Vào trang chủ →
                                     </Link>
                                 ) : (
                                     <>

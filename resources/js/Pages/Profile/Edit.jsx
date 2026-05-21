@@ -48,11 +48,11 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                 <ul className="space-y-4">
                                     <li className="flex gap-3 text-xs text-slate-500 leading-relaxed font-medium">
                                         <span className="text-indigo-500 font-bold">01</span>
-                                        Cập nhật email chính xác để nhận các thông báo từ hệ thống.
+                                        Cập nhật email chính xác để nhận các thông báo từ hệ thống
                                     </li>
                                     <li className="flex gap-3 text-xs text-slate-500 leading-relaxed font-medium">
                                         <span className="text-indigo-500 font-bold">02</span>
-                                        Sử dụng mật khẩu mạnh (trên 8 ký tự) để bảo vệ công việc của bạn.
+                                        Sử dụng mật khẩu mạnh (trên 8 ký tự) để bảo vệ công việc của bạn
                                     </li>
                                 </ul>
                             </div>

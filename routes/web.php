@@ -8,12 +8,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ThongkeController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\ProjectUserController;
 
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\FeedBackController;
 use App\Http\Controllers\Admin\AdminPDFController;
+use App\Http\Controllers\Admin\ProjectController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -51,6 +53,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tasks/{task}/feedbacks', [TaskController::class, 'getFeedbacks'])->name('task.get-feedbacks');
     // Gửi phản hồi mới
     Route::post('/tasks/{task}/feedbacks', [TaskController::class, 'storeFeedback'])->name('task.store-feedback');
+     
+    // Projects
+    Route::get('/du-an-cua-toi', [ProjectUserController::class, 'index'])->name('user.projects.index');
+    Route::get('/du-an-cua-toi/{id}', [ProjectUserController::class, 'show'])->name('user.projects.show');
+    Route::patch('/du-an-cua-toi/update-status/{userId}/{projectId}', [ProjectUserController::class, 'updateStatus'])
+    ->name('user.projects.update-status');
 });
 
 // CV thông minh
@@ -120,6 +128,9 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     // Bảng xếp hạng PDF
     Route::get('/adminpdf', [AdminPDFController::class, 'index'])->name('adminpdf.index');
     Route::get('/export-ranking', [AdminPDFController::class, 'export'])->name('admin.ranking.export');
+
+    // project
+    Route::resource('projects', ProjectController::class);
 });
 
 require __DIR__.'/auth.php';

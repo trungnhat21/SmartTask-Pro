@@ -49,7 +49,11 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     // Xóa 1 công việc
     const deleteTask = (id) => {
         if (confirm('Bạn có chắc chắn muốn xóa công việc này không?')) {
-            router.delete(route('task.destroy', id));
+            router.delete(route('task.destroy', id), {
+                onSuccess: () => {
+                    setSelectedIds((prev) => prev.filter((item) => item !== id));
+                }
+            });
         }
     };
 
@@ -438,7 +442,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-50 rounded-full mb-4">
                                     <i className="fa-solid fa-folder-open text-3xl text-gray-300"></i>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-800">Mọi thứ đều sạch sẽ!</h3>
+                                <h3 className="text-xl font-semibold text-gray-800">Mọi thứ đều sạch sẽ</h3>
                                 <p className="text-gray-500 mt-2">Hãy bắt đầu bằng cách tạo một công việc mới</p>
                             </div>
                         )}

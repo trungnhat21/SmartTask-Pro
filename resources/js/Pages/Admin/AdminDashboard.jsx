@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTasks, completedTasks, allUsers, filters }) {
@@ -137,13 +137,21 @@ export default function AdminDashboard({ auth, totalUsers, totalTasks, overdueTa
                                 <option value="Hoàn thành">Hoàn thành</option>
                             </select>
                         </div>
-
+                        
                         <button 
                             onClick={handleFilter}
                             className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
                         >
-                            <i className="fa-solid fa-filter"></i> Lọc kết quả
+                            Lọc kết quả
                         </button>
+
+                        <Link 
+                            href={route('admin.projects.create')} 
+                            className="w-full md:w-auto px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2"
+                        >
+                            Tạo dự án mới
+                        </Link>
+
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">

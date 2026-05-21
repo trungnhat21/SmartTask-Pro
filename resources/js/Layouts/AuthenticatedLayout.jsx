@@ -76,6 +76,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Gợi ý thông minh
                                 </NavLink>
+                                
+                                <NavLink
+                                    href={route('user.projects.index')}
+                                    active={route().current('user.projects.index')}
+                                    className="px-4 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-slate-50"
+                                >
+                                    Dự án của tôi
+                                </NavLink>
 
                                 <NavLink
                                     href={route('Thongke')}
@@ -122,7 +130,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content contentClasses="py-1 bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100">
                                         <div className="px-4 py-2">
-                                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Tài khoản</p>
+                                            <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Tài khoản</p>
                                             <p className="text-sm font-medium text-slate-900 truncate">{user.email}</p>
                                         </div>
                                         
