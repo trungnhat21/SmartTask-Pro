@@ -122,7 +122,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                     
                     <div className="relative overflow-hidden bg-indigo-500 rounded-2xl shadow-2xl shadow-indigo-200">
                         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-                            <div className="p-8 text-white relative z-10">
+                            <div className="p-6 md:p-8 text-white relative z-10">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-white/20 p-3 rounded-xl backdrop-blur-md shrink-0">
                                         <span className="text-3xl animate-bounce inline-block">✨</span>
@@ -136,7 +136,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                             </span>
                                         </h3>
                                         <div className={`mt-2 text-indigo-100/90 leading-relaxed transition-all duration-500 transform ${fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                                            <p className="text-base min-h-[3rem] md:min-h-0">
+                                            <p className="text-sm md:text-base min-h-[4rem] md:min-h-0">
                                                 {messages[currentMsgIndex]}
                                             </p>
                                         </div>
@@ -154,7 +154,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
-                        <div className="lg:col-span-2 flex flex-col">
+                        <div className="md:col-span-2 flex flex-col">
                             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 flex-1 flex flex-col">
                                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
                                     <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ export default function Dashboard({ auth, upcomingTasks = [], stats = { total: 0
                                     </div>
                                     <Link 
                                         href={route('Quanlycongviec')} 
-                                        className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
+                                        className="text-xs md:text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
                                     >
                                         Xem tất cả →
                                     </Link>

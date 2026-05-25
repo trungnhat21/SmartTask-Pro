@@ -39,41 +39,43 @@ export default function Show({ auth, project, members, activities = [] }) {
                     <div className="px-8 py-6 border-b border-slate-50">
                         <h3 className="text-lg font-semibold text-slate-900">Danh sách nhiệm vụ</h3>
                     </div>
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-xs font-semibold text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                                <th className="px-8 py-5 font-semibold">Người thực hiện</th>
-                                <th className="px-6 py-5 font-semibold">Công việc</th>
-                                <th className="px-6 py-5 font-semibold">Hạn chót</th>
-                                <th className="px-6 py-5 font-semibold">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {members.map((member) => (
-                                <tr key={member.id} className="hover:bg-slate-50/80 transition-all">
-                                    <td className="px-8 py-5 font-semibold text-slate-900">{member.name}</td>
-                                    <td className="px-6 py-5 text-sm text-indigo-600 font-medium">{member.pivot?.task_name || '---'}</td>
-                                    <td className="px-6 py-5 text-sm text-slate-600">{member.pivot?.deadline || '---'}</td>
-                                    <td className="px-6 py-5">
-                                        {member.id === auth.user.id ? (
-                                            <select 
-                                                value={member.pivot?.status || 'Đang tiến hành'} 
-                                                onChange={(e) => handleStatusChange(member.id, e.target.value)}
-                                                className="text-xs font-semibold rounded-xl border-slate-200 bg-slate-50 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
-                                            >
-                                                <option value="Đang tiến hành">Đang tiến hành</option>
-                                                <option value="Hoàn thành">Hoàn thành</option>
-                                            </select>
-                                        ) : (
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase ${member.pivot?.status === 'Hoàn thành' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                                                {member.pivot?.status || 'Đang tiến hành'}
-                                            </span>
-                                        )}
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="text-xs font-semibold text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                                    <th className="px-8 py-5 font-semibold">Người thực hiện</th>
+                                    <th className="px-6 py-5 font-semibold">Công việc</th>
+                                    <th className="px-6 py-5 font-semibold">Hạn chót</th>
+                                    <th className="px-6 py-5 font-semibold">Trạng thái</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {members.map((member) => (
+                                    <tr key={member.id} className="hover:bg-slate-50/80 transition-all">
+                                        <td className="px-8 py-5 font-semibold text-slate-900">{member.name}</td>
+                                        <td className="px-6 py-5 text-sm text-indigo-600 font-medium">{member.pivot?.task_name || '---'}</td>
+                                        <td className="px-6 py-5 text-sm text-slate-600">{member.pivot?.deadline || '---'}</td>
+                                        <td className="px-6 py-5">
+                                            {member.id === auth.user.id ? (
+                                                <select 
+                                                    value={member.pivot?.status || 'Đang tiến hành'} 
+                                                    onChange={(e) => handleStatusChange(member.id, e.target.value)}
+                                                    className="text-xs font-semibold rounded-xl border-slate-200 bg-slate-50 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+                                                >
+                                                    <option value="Đang tiến hành">Đang tiến hành</option>
+                                                    <option value="Hoàn thành">Hoàn thành</option>
+                                                </select>
+                                            ) : (
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase ${member.pivot?.status === 'Hoàn thành' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                                    {member.pivot?.status || 'Đang tiến hành'}
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -89,7 +91,7 @@ export default function Show({ auth, project, members, activities = [] }) {
                                     {new Date(log.created_at).toLocaleString('vi-VN')}
                                 </p>
                             </div>
-                        )) : <p className="text-slate-400 text-sm italic">Chưa có lịch sử hoạt động.</p>}
+                        )) : <p className="text-slate-400 text-sm italic">Chưa có lịch sử hoạt động</p>}
                     </div>
                 </div>
 

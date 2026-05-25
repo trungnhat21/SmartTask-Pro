@@ -28,33 +28,34 @@ export default function Index({ auth, projects, filters }) {
                 </form>
 
                 <div className="bg-white shadow rounded-lg overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Tên dự án</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Công việc của tôi</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Hạn chót</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Chi tiết</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {projects.data.length > 0 ? (
-                                projects.data.map((proj) => (
-                                    <tr key={proj.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-bold text-gray-900">{proj.name}</td>
-                                        <td className="px-6 py-4 text-indigo-600 font-medium">{proj.pivot?.task_name}</td>
-                                        <td className="px-6 py-4 text-gray-600">{proj.pivot?.deadline}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Link href={route('user.projects.show', proj.id)} className="text-blue-600 font-bold hover:underline">Xem</Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">Không tìm thấy dự án nào.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 border-b">
+                                <tr>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Tên dự án</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Công việc của tôi</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Hạn chót</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {projects.data.length > 0 ? (
+                                    projects.data.map((proj) => (
+                                        <tr key={proj.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-bold text-gray-900">{proj.name}</td>
+                                            <td className="px-6 py-4 text-indigo-600 font-medium">{proj.pivot?.task_name}</td>
+                                            <td className="px-6 py-4 text-gray-600">{proj.pivot?.deadline}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <Link href={route('user.projects.show', proj.id)} className="text-blue-600 font-bold hover:underline">Xem</Link>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">Không tìm thấy dự án nào.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                     {/* Phân trang */}
                     <div className="p-4 border-t flex flex-wrap items-center justify-between gap-4 bg-gray-50">
                         <div className="text-sm text-gray-600">

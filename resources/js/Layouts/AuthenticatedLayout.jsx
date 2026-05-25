@@ -102,6 +102,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
                             </div>
                         </div>
+                        
+                        
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
@@ -169,18 +171,12 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
-                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                className="inline-flex items-center justify-center rounded-xl p-2 text-slate-500 transition duration-150 ease-in-out hover:bg-slate-100 hover:text-slate-600 focus:outline-none"
+                                onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                                className="inline-flex items-center justify-center rounded-xl p-2 text-white hover:bg-indigo-500 focus:outline-none"
                             >
                                 <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"
-                                    />
+                                    <path className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                    <path className={showingNavigationDropdown ? 'inline-flex' : 'hidden'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
@@ -189,9 +185,12 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-b border-slate-200 shadow-xl'}>
                     <div className="space-y-1 pb-3 pt-2 px-2">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Dashboard
-                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Trang chủ</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('Quanlycongviec')} active={route().current('Quanlycongviec')}>Quản lý công việc</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('Cvthongminh')} active={route().current('Cvthongminh')}>Gợi ý thông minh</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('user.projects.index')} active={route().current('user.projects.index')}>Dự án của tôi</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('Thongke')} active={route().current('Thongke')}>Thống kê</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('Chinhsach')} active={route().current('Chinhsach')}>Chính sách</ResponsiveNavLink>
                     </div>
 
                     <div className="border-t border-slate-100 pb-1 pt-4 px-4 bg-slate-50/50">
@@ -207,6 +206,18 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>Hồ sơ</ResponsiveNavLink>
+
+                            {(user.role === 'admin' || user.role === 'manager' || user.role === 'approve') && (
+                                <ResponsiveNavLink 
+                                    href={route('admin.users.index')} 
+                                    className="text-indigo-600 font-semibold"
+                                >
+                                    {user.role === 'admin' && 'Khu vực Admin'}
+                                    {user.role === 'manager' && 'Manager'}
+                                    {user.role === 'approve' && 'Approve'}
+                                </ResponsiveNavLink>
+                            )}
+
                             <ResponsiveNavLink method="post" href={route('logout')} as="button" onClick={handleLogout} className="text-red-600">
                                 Đăng xuất
                             </ResponsiveNavLink>
