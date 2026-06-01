@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/quan-ly-cong-viec/{task}/update-status', [TaskController::class, 'updateStatus'])->name('task.update-status');
     // Phản hồi từ user và admin
     Route::get('/tasks/{task}/feedbacks', [TaskController::class, 'getFeedbacks'])->name('task.get-feedbacks');
+    Route::get('/tasks/unread-counts', [TaskController::class, 'unreadFeedbackCounts'])->name('task.unread-feedback-counts');
     // Gửi phản hồi mới
     Route::post('/tasks/{task}/feedbacks', [TaskController::class, 'storeFeedback'])->name('task.store-feedback');
      
@@ -116,7 +117,7 @@ Route::middleware([ \App\Http\Middleware\AdminMiddleware::class ])->prefix('admi
     Route::get('/tasks', [AdminTaskController::class, 'index'])->name('tasks.index');
     
     Route::delete('/tasks/destroy-all', [AdminTaskController::class, 'destroyAll'])->name('tasks.destroyAll');
-
+    Route::get('/tasks/unread-counts', [AdminTaskController::class, 'unreadFeedbackCounts'])->name('tasks.unread-feedback-counts');
     Route::get('/tasks/create', [AdminTaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [AdminTaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}/edit', [AdminTaskController::class, 'edit'])->name('tasks.edit');

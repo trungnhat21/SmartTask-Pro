@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { useState } from 'react';
 import { useRef, useEffect } from 'react';
 
@@ -7,6 +8,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     // Tìm kiếm + độ ưu tiên
     const [search, setSearch] = useState(filters?.search || '');
     const [priority, setPriority] = useState(filters?.priority || '');
+    const [taskRows, setTaskRows] = useState(tasks.data || []);
 
     // Checkbox
     const [selectedIds, setSelectedIds] = useState([]);
@@ -31,6 +33,10 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     const [newFeedback, setNewFeedback] = useState('');
     const [loadingFeedback, setLoadingFeedback] = useState(false);
     const scrollRef = useRef(null);
+
+    useEffect(() => {
+        setTaskRows(tasks.data || []);
+    }, [tasks.data]);
 
     // Mở modal xem chi tiết công việc
     const openModal = (task) => {
@@ -59,7 +65,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
 
     // Cập nhật trạng thái công việc
     const updateStatus = (id, newStatus) => {
-        const task = tasks.data.find(t => t.id === id);
+        const task = taskRows.find(t => t.id === id);
 
         if (task.created_by_admin && newStatus === 'Hoàn thành') {
             setCurrentTaskId(id);
@@ -139,6 +145,7 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         try {
             const response = await axios.get(route('task.get-feedbacks', task.id));
             setFeedbackList(response.data);
+            setTaskRows((prev) => prev.map((item) => item.id === task.id ? { ...item, unread_count: 0 } : item));
         } catch (error) {
             console.error("Lỗi lấy phản hồi:", error);
         } finally {
@@ -155,18 +162,46 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
         }
     };
 
-    const sendFeedback = () => {
+    const fetchUnreadCounts = async () => {
+        try {
+            const response = await axios.get(route('task.unread-feedback-counts'), {
+                headers: { Accept: 'application/json' }
+            });
+            const counts = response.data;
+            // Tạo map để lookup nhanh
+            const countMap = {};
+            counts.forEach(item => {
+                countMap[item.id] = item.unread_count;
+            });
+            setTaskRows((prev) => prev.map((task) => {
+                return { ...task, unread_count: countMap[task.id] || 0 };
+            }));
+        } catch (error) {
+            console.error('Lỗi lấy số tin nhắn chưa đọc:', error);
+        }
+    };
+
+    const sendFeedback = async () => {
         if (!newFeedback.trim()) return;
-        router.post(route('task.store-feedback', selectedTask.id), {
-            content: newFeedback,
-            type: 'feedback'
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setNewFeedback('');
-                fetchLatestFeedback();
-            }
-        });
+
+        try {
+            await axios.post(route('task.store-feedback', selectedTask.id), {
+                content: newFeedback,
+                type: 'feedback'
+            }, {
+                headers: { Accept: 'application/json' }
+            });
+            setNewFeedback('');
+            setTaskRows((prev) => prev.map((item) => item.id === selectedTask.id ? { ...item, unread_count: 0 } : item));
+            fetchLatestFeedback();
+            // Thông báo cho admin page rằng có tin nhắn mới (qua localStorage)
+            localStorage.setItem('feedback_notification', JSON.stringify({
+                taskId: selectedTask.id,
+                timestamp: Date.now()
+            }));
+        } catch (error) {
+            console.error('Lỗi gửi phản hồi:', error);
+        }
     };
 
     const scrollToBottom = () => {
@@ -182,6 +217,33 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
     useEffect(() => {
         scrollToBottom();
     }, [feedbackList]);
+
+    useEffect(() => {
+        fetchUnreadCounts(); // Gọi ngay lập tức
+        const interval = setInterval(fetchUnreadCounts, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if (!isFeedbackModalOpen || !selectedTask) return;
+        const interval = setInterval(fetchLatestFeedback, 1000);
+        return () => clearInterval(interval);
+    }, [isFeedbackModalOpen, selectedTask]);
+
+    // Listen storage event từ admin page
+    useEffect(() => {
+        const handleStorageChange = async (event) => {
+            if (event.key === 'admin_reply_notification') {
+                console.log('Nhận được reply từ admin:', event.newValue);
+                await fetchUnreadCounts();
+                if (isFeedbackModalOpen && selectedTask) {
+                    await fetchLatestFeedback();
+                }
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [isFeedbackModalOpen, selectedTask]);
 
     return (
         <AuthenticatedLayout
@@ -278,8 +340,8 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
-                        {tasks.data && tasks.data.length > 0 ? (
-                            tasks.data.map((task) => (
+                        {taskRows.length > 0 ? (
+                            taskRows.map((task) => (
                                 <div 
                                     key={task.id} 
                                     className={`group relative flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
@@ -695,8 +757,9 @@ export default function Quanlycongviec({ auth, tasks, filters, nearDeadlineCount
                                 rows="2"
                             />
                             <div className="flex gap-2">
-                                <button onClick={() => setIsFeedbackModalOpen(false)} className="flex-1 py-2 text-gray-500 font-bold">Đóng</button>
+                                <button type="button" onClick={() => setIsFeedbackModalOpen(false)} className="flex-1 py-2 text-gray-500 font-bold">Đóng</button>
                                 <button 
+                                    type="button"
                                     onClick={sendFeedback}
                                     className="flex-[2] py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
                                 >

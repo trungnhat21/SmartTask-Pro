@@ -272,7 +272,7 @@ class TaskController extends Controller
         }
 
         // 3. Lưu vào database
-        \App\Models\TaskFeedback::create([
+        $feedback = \App\Models\TaskFeedback::create([
             'task_id'     => $taskId,
             'user_id'     => $currentUser->id,
             'content'     => $request->content,
@@ -281,8 +281,20 @@ class TaskController extends Controller
             'receiver_id' => $receiverId,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'feedback' => $feedback,
+                'unread_count' => \App\Models\TaskFeedback::where('task_id', $taskId)
+                    ->where('receiver_id', auth()->id())
+                    ->where('is_read', 0)
+                    ->count(),
+            ]);
+        }
+
         return back();
     }
+
     public function getFeedbacks($taskId)
     {
         \App\Models\TaskFeedback::where('task_id', $taskId)
@@ -295,5 +307,18 @@ class TaskController extends Controller
             ->get();
 
         return response()->json($feedbacks);
+    }
+
+    public function unreadFeedbackCounts()
+    {
+        $tasks = Task::where('user_id', auth()->id())
+            ->withCount(['feedbacks as unread_count' => function ($query) {
+                $query->where('receiver_id', auth()->id())->where('is_read', 0);
+            }])
+            ->having('unread_count', '>', 0)
+            ->get()
+            ->map(fn($task) => ['id' => $task->id, 'unread_count' => $task->unread_count]);
+
+        return response()->json($tasks);
     }
 }

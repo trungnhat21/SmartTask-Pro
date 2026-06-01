@@ -1,11 +1,13 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import { useState } from 'react';
 import { useRef, useEffect } from 'react';
 
 export default function Tasks({ auth, tasks, users, filters }) {
     const [priority, setPriority] = useState(filters.priority || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [taskRows, setTaskRows] = useState(tasks.data || []);
 
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [reviewTask, setReviewTask] = useState(null);
@@ -17,6 +19,65 @@ export default function Tasks({ auth, tasks, users, filters }) {
     const [loadingFeedback, setLoadingFeedback] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const scrollRef = useRef(null);
+
+    useEffect(() => {
+        setTaskRows(tasks.data || []);
+    }, [tasks.data]);
+
+    const fetchUnreadCounts = async () => {
+        try {
+            const response = await axios.get(route('admin.tasks.unread-feedback-counts'), {
+                headers: { Accept: 'application/json' }
+            });
+            console.log('📩 Admin unread counts:', response.data); // Debug
+            const counts = response.data;
+            const countMap = {};
+            counts.forEach(item => {
+                countMap[item.id] = item.unread_count;
+            });
+            setTaskRows((prev) => prev.map((task) => {
+                const newCount = countMap[task.id] || 0;
+                if (newCount !== task.unread_count) {
+                    console.log(`Task ${task.id}: ${task.unread_count} → ${newCount}`); // Debug
+                }
+                return { ...task, unread_count: newCount };
+            }));
+        } catch (error) {
+            console.error('Lỗi lấy số tin nhắn chưa đọc:', error);
+        }
+    };
+
+    const fetchLatestFeedback = async () => {
+        try {
+            const response = await axios.get(route('task.get-feedbacks', selectedTask.id));
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error("Lỗi cập nhật tin nhắn:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCounts(); 
+        const interval = setInterval(fetchUnreadCounts, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if (!isFeedbackModalOpen || !selectedTask) return;
+        const interval = setInterval(fetchLatestFeedback, 1000);
+        return () => clearInterval(interval);
+    }, [isFeedbackModalOpen, selectedTask]);
+
+    useEffect(() => {
+        const handleStorageChange = async (event) => {
+            if (event.key === 'feedback_notification') {
+                console.log('Nhận được feedback từ user:', event.newValue);
+                await fetchUnreadCounts();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const { 
@@ -145,9 +206,11 @@ export default function Tasks({ auth, tasks, users, filters }) {
         setSelectedTask(task);
         setIsFeedbackModalOpen(true);
         setLoadingFeedback(true);
+        setTaskRows((prev) => prev.map((item) => item.id === task.id ? { ...item, unread_count: 0 } : item));
         try {
             const response = await axios.get(route('task.get-feedbacks', task.id));
             setFeedbackList(response.data);
+            await fetchUnreadCounts();
         } catch (error) {
             console.error("Lỗi lấy phản hồi:", error);
         } finally {
@@ -155,42 +218,45 @@ export default function Tasks({ auth, tasks, users, filters }) {
         }
     };
 
-    const handleAdminReply = () => {
+    const handleAdminReply = async () => {
         if (!newFeedback.trim()) return;
-        router.post(route('task.store-feedback', selectedTask.id), {
-            content: newFeedback,
-            type: 'reply'
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setNewFeedback('');
-                fetchLatestFeedback();
-            }
-        });
-    };
 
-    const fetchLatestFeedback = async () => {
         try {
-            const response = await axios.get(route('task.get-feedbacks', selectedTask.id));
-            setFeedbackList(response.data);
+            await axios.post(route('task.store-feedback', selectedTask.id), {
+                content: newFeedback,
+                type: 'reply'
+            }, {
+                headers: { Accept: 'application/json' }
+            });
+            setNewFeedback('');
+            setTaskRows((prev) => prev.map((item) => item.id === selectedTask.id ? { ...item, unread_count: 0 } : item));
+            fetchLatestFeedback();
+            localStorage.setItem('admin_reply_notification', JSON.stringify({
+                taskId: selectedTask.id,
+                timestamp: Date.now()
+            }));
         } catch (error) {
-            console.error("Lỗi cập nhật tin nhắn:", error);
+            console.error('Lỗi gửi phản hồi:', error);
         }
     };
 
     // 2. Hàm từ chối nhanh
-    const handleAdminReject = () => {
+    const handleAdminReject = async () => {
         if (!confirm("Bạn có chắc chắn muốn từ chối phản hồi này không?")) return;
         
-        router.post(route('task.store-feedback', selectedTask.id), {
-            content: "Phản hồi bị từ chối",
-            type: 'reject'
-        }, {
-            onSuccess: () => {
-                setNewFeedback('');
-                openFeedback(selectedTask);
-            }
-        });
+        try {
+            await axios.post(route('task.store-feedback', selectedTask.id), {
+                content: "Phản hồi bị từ chối",
+                type: 'reject'
+            }, {
+                headers: { Accept: 'application/json' }
+            });
+            setNewFeedback('');
+            setTaskRows((prev) => prev.map((item) => item.id === selectedTask.id ? { ...item, unread_count: 0 } : item));
+            openFeedback(selectedTask);
+        } catch (error) {
+            console.error('Lỗi từ chối phản hồi:', error);
+        }
     };
 
     // Cuộn xuống cuối
@@ -286,7 +352,7 @@ export default function Tasks({ auth, tasks, users, filters }) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {tasks.data && tasks.data.length > 0 ? tasks.data.map((task) => (
+                                {taskRows.length > 0 ? taskRows.map((task) => (
                                     <tr key={task.id} className="hover:bg-gray-50 transition">
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{task.title}</td>
                                         <td className="px-6 py-4 text-sm text-gray-600">{task.user ? task.user.name : 'Chưa gán'}</td>
@@ -825,13 +891,15 @@ export default function Tasks({ auth, tasks, users, filters }) {
 
                             <div className="flex gap-4">
                                 <button 
+                                    type="button"
                                     onClick={handleAdminReject}
                                     className="flex-1 py-3 px-6 bg-white text-red-600 rounded-2xl font-semibold hover:bg-red-50 transition-all border-2 border-red-100 flex items-center justify-center gap-2 group active:scale-95"
                                 >
                                     <i className="fa-solid fa-circle-xmark text-lg"></i>
-                                    Từ chối báo cáo
+                                    Từ chối phản hồi
                                 </button>
                                 <button 
+                                    type="button"
                                     onClick={handleAdminReply}
                                     className="flex-[2] py-3 px-6 bg-indigo-600 text-white rounded-2xl font-semibold hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-200 transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >

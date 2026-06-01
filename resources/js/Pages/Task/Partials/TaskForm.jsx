@@ -10,7 +10,6 @@ export default function TaskForm({ data, setData, errors, processing, submit, is
             {/* Header Form */}
             <div className="border-b border-gray-100 pb-4">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    <i className={`fa-solid ${isEdit ? 'fa-pen-to-square' : 'fa-plus-circle'} text-indigo-600`}></i>
                     {isEdit ? 'Cập nhật công việc' : 'Tạo công việc mới'}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">Thông tin công việc được đồng bộ trên hệ thống quản lý.</p>

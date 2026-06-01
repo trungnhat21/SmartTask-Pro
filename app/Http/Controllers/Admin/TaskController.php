@@ -262,6 +262,10 @@ class TaskController extends Controller
     }
 
     public function getFeedbacks($taskId) {
+        TaskFeedback::where('task_id', $taskId)
+            ->where('receiver_id', auth()->id())
+            ->update(['is_read' => 1]);
+
         $feedbacks = TaskFeedback::with('user:id,name')
             ->where('task_id', $taskId)
             ->orderBy('created_at', 'asc')
@@ -275,7 +279,7 @@ class TaskController extends Controller
             'type' => 'required|in:feedback,reply,reject'
         ]);
         $task = Task::findOrFail($taskId);
-        TaskFeedback::create([
+        $feedback = TaskFeedback::create([
             'task_id' => $taskId,
             'user_id' => auth()->id(),
             'content' => $request->content,
@@ -284,6 +288,28 @@ class TaskController extends Controller
             'receiver_id' => $task->user_id,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'feedback' => $feedback,
+                'unread_count' => TaskFeedback::where('task_id', $taskId)
+                    ->where('receiver_id', auth()->id())
+                    ->where('is_read', 0)
+                    ->count(),
+            ]);
+        }
+
         return back()->with('message', 'Thao tác thành công');
+    }
+
+    public function unreadFeedbackCounts() {
+        $tasks = Task::withCount(['feedbacks as unread_count' => function ($query) {
+                $query->where('receiver_id', auth()->id())->where('is_read', 0);
+            }])
+            ->having('unread_count', '>', 0)
+            ->get()
+            ->map(fn($task) => ['id' => $task->id, 'unread_count' => $task->unread_count]);
+
+        return response()->json($tasks);
     }
 }
